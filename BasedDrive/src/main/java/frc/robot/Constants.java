@@ -11,6 +11,7 @@ public class Constants {
        public static double frontLeftY = -1;
        public static double backRightY = 1;
        public static double backLeftY = 1;
-
+        
+       public static double angularVelocity = Math.PI/2;
     }
 }
