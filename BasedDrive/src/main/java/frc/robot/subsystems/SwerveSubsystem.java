@@ -21,9 +21,6 @@ public class SwerveSubsystem extends SubsystemBase {
     private SwerveModule m_backLeft;
     private SwerveModule m_backRight;
     
-    private Joystick m_leftJoystick;
-    private Joystick m_rightJoystick;
-
     private PIDController m_PIDSpeed;
     private PIDController m_PIDAngle;
 
@@ -36,7 +33,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightModule, m_frontLeftModule, m_backRightModule, m_backLeftModule);
 
-    public SwerveSubsystem(Joystick p_leftJoystick, Joystick p_rightJoystick) {
+    public SwerveSubsystem() {
 
         m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
         m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS);
@@ -53,14 +50,60 @@ public class SwerveSubsystem extends SubsystemBase {
         //vy: input joystick X value
         //omega: input joystick angular value
 
+        //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
+        //depending on which alliance we/the opponents are (DriverStation.getAlliance())
+        //reference the fromfieldRelativeSpeeds method docs as necessary for more exact defintion of parameters and output
+
+        //something to consider, module angle rate of change should be limited to prevent skidding when translated quickly
+        //RobotCasserole uses interpolation with a look up table, might be useful
+
         ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
         SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
         
-        SwerveModuleState frontLeft = moduleStates[0];
-        SwerveModuleState frontRight = moduleStates[1];
-        SwerveModuleState backLeft = moduleStates[2];
-        SwerveModuleState backRight = moduleStates[3];
+        SwerveModuleState frontLeftState = moduleStates[0];
+        SwerveModuleState frontRightState = moduleStates[1];
+        SwerveModuleState backLeftState = moduleStates[2];
+        SwerveModuleState backRightState = moduleStates[3];
+
+
+        //PID on wheel speeds
+        double frontLeftWheelOutput = m_PIDSpeed.calculate(
+            m_frontLeft.getSpeed(), frontLeftState.speedMetersPerSecond);
+    
+        double frontRightWheelOutput = m_PIDSpeed.calculate(
+            m_frontRight.getSpeed(), frontRightState.speedMetersPerSecond);
+        
+        double backLeftWheelOutput = m_PIDSpeed.calculate(
+            m_backLeft.getSpeed(), backLeftState.speedMetersPerSecond);
+        
+        double backRightWheelOutput = m_PIDSpeed.calculate(
+            m_backRight.getSpeed(), backRightState.speedMetersPerSecond);
+
+        //PID on module angle position
+        double frontLeftAngleOutput = m_PIDAngle.calculate(
+            m_frontLeft.getDegrees(), frontLeftState.angle.getDegrees());
+
+        double frontRightAngleOutput = m_PIDAngle.calculate(
+            m_frontRight.getDegrees(), frontRightState.angle.getDegrees());
+
+        double backLeftAngleOutput = m_PIDAngle.calculate(
+            m_backLeft.getDegrees(), backLeftState.angle.getDegrees());
+
+        double backRightAngleOutput = m_PIDAngle.calculate(
+            m_backRight.getDegrees(), backRightState.angle.getDegrees());
+
+        //set wheel speeds
+        m_frontLeft.setSpeedVelocity(frontLeftWheelOutput);
+        m_frontRight.setSpeedVelocity(frontRightWheelOutput);
+        m_backLeft.setSpeedVelocity(backLeftWheelOutput);
+        m_backRight.setSpeedVelocity(backRightWheelOutput);
+
+        //set module positions speeds (in volts)
+        m_frontLeft.setSpeedVolts(frontLeftAngleOutput * 12.0);
+        m_frontRight.setSpeedVolts(frontRightAngleOutput * 12.0);
+        m_backLeft.setSpeedVolts(backLeftAngleOutput * 12.0);
+        m_backRight.setSpeedVolts(backRightAngleOutput * 12.0);
     }
 
     public double getYaw() {

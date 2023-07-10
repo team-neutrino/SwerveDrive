@@ -29,4 +29,10 @@ public class Constants {
        public static double I;
        public static double D;
     }
+
+    public static class OperatorConstants
+    {
+        public static int LEFT_JOYSTICK = 0;
+        public static int RIGHT_JOYSTICK = 1;
+    }
 }

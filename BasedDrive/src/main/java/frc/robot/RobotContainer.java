@@ -4,12 +4,25 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.SwerveDefaultCommand;
+import frc.robot.subsystems.SwerveSubsystem;
 
 public class RobotContainer {
   public RobotContainer() {
     configureBindings();
+
+    //CONTROLLERS
+    Joystick m_leftJoystick = new Joystick(Constants.OperatorConstants.LEFT_JOYSTICK);
+    Joystick m_rightJoystick = new Joystick(Constants.OperatorConstants.RIGHT_JOYSTICK);
+
+    //SUBSYSTEMS
+    SwerveSubsystem m_swerve = new SwerveSubsystem();
+
+    //COMMANDS
+    SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve);
   }
 
   private void configureBindings() {}

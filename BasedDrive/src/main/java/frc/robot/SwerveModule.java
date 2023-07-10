@@ -29,24 +29,47 @@ public class SwerveModule {
         //rpm to rps
         angleEncoder.setVelocityConversionFactor(60);
         speedEncoder.setVelocityConversionFactor(60);
+
+        //The swerve module gear ratio is 7.36:1; dividing by this should return the module rotations
+        //angleEncoder.setPositionConversionFactor(1/7.36); needed???
     }
 
-        public double getSpeed()
-        {
-          //default returns RPM, conversion is 60 so it should be returning
-          //rotations per second
-          return speedEncoder.getVelocity();
-        }
+    public double getRotations()
+    {
+        return angleEncoder.getPosition(); 
+    }
 
-        public double getAngle()
-        {
-          //default returns rotations, 
-          return angleEncoder.getPosition();
-        }
+    public double getDegrees()
+    //in degrees
+    {
+        return (angleEncoder.getPosition() * 360) % 360;
+    }
 
-        public void move(double speed, double angle) {
-            
-        }
+    public double getSpeed()
+    {
+      //default returns RPM, conversion is 60 so it should be returning
+      //rotations per second
+      return speedEncoder.getVelocity();
+    }
+
+    public void setAngle(double speed)
+    {
+      speedMotor.set(speed);
+    }
+
+    public void setSpeedVelocity(double speed)
+    {
+      speedMotor.set(speed);
+    }
+
+    public void setSpeedVolts(double speed)
+    {
+      angleMotor.setVoltage(speed);
+    }
+     
+    public void move(double speed, double angle) {
+        
+    }
 
     
 }
