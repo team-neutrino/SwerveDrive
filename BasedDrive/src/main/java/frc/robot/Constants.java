@@ -3,6 +3,16 @@ package frc.robot;
 public class Constants {
     
     public static class Swervestuff {
+       public static int FLA;
+       public static int FRA;
+       public static int BLA; 
+       public static int BRA;
+       public static int FLS;
+       public static int FRS;
+       public static int BLS;
+       public static int BRS;
+
+
        public static double frontRightX = 0.5;
        public static double frontLeftX = 0.5;
        public static double backRightX = -0.5;
