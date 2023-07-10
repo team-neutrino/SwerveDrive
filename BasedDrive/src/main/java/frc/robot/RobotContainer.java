@@ -23,6 +23,9 @@ public class RobotContainer {
 
     //COMMANDS
     SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve);
+
+    //make default command
+    m_swerve.setDefaultCommand(m_swerveDefaultCommand);
   }
 
   private void configureBindings() {}

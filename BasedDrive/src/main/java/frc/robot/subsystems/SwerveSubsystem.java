@@ -3,16 +3,21 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.*;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.kauailabs.navx.frc.AHRS;
+
 
 public class SwerveSubsystem extends SubsystemBase {
     
@@ -33,6 +38,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightModule, m_frontLeftModule, m_backRightModule, m_backLeftModule);
 
+    //SIMULATION
+    Pose2d newPose = new Pose2d(3, 3, Rotation2d.fromDegrees(0));
+    SwerveModulePosition[] swervePositions = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
+    SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(0), swervePositions, newPose);
+    Field2d field = new Field2d();
+    XboxController m_driverController = new XboxController(0);
+
     public SwerveSubsystem() {
 
         m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
@@ -42,6 +54,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
         m_PIDSpeed = new PIDController(Constants.Swerve.P, 0, 0);
         m_PIDAngle = new PIDController(Constants.Swerve.P, 0, 0);
+
+        //SIMULATION
+        SmartDashboard.putData("Field", field);
+        field.getRobotObject().close();
     }
 
     public void Swerve(double vx, double vy, double omega) {
@@ -82,16 +98,16 @@ public class SwerveSubsystem extends SubsystemBase {
 
         //PID on module angle position
         double frontLeftAngleOutput = m_PIDAngle.calculate(
-            m_frontLeft.getDegrees(), frontLeftState.angle.getDegrees());
+            m_frontLeft.getDegrees() / 360, frontLeftState.angle.getDegrees() / 360);
 
         double frontRightAngleOutput = m_PIDAngle.calculate(
-            m_frontRight.getDegrees(), frontRightState.angle.getDegrees());
+            m_frontRight.getDegrees() / 360, frontRightState.angle.getDegrees() / 360);
 
         double backLeftAngleOutput = m_PIDAngle.calculate(
-            m_backLeft.getDegrees(), backLeftState.angle.getDegrees());
+            m_backLeft.getDegrees() / 360, backLeftState.angle.getDegrees() / 360);
 
         double backRightAngleOutput = m_PIDAngle.calculate(
-            m_backRight.getDegrees(), backRightState.angle.getDegrees());
+            m_backRight.getDegrees() / 360, backRightState.angle.getDegrees() / 360);
 
         //set wheel speeds
         m_frontLeft.setSpeedVelocity(frontLeftWheelOutput);
@@ -121,7 +137,18 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic()
     {
-        
+        newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
+            new SwerveModulePosition[] {
+                new SwerveModulePosition(m_frontLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontLeft.getDegrees())),
+                new SwerveModulePosition(m_frontRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontRight.getDegrees())),
+                new SwerveModulePosition(m_backLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backLeft.getDegrees())),
+                new SwerveModulePosition(m_backRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backRight.getDegrees()))
+            });
+
+        field.getObject("Sim Robot").setPose(newPose);
+
+        //comment this out when not simulating
+        Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
     }
 
 

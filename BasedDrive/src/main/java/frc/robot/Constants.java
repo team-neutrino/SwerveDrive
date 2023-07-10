@@ -35,4 +35,9 @@ public class Constants {
         public static int LEFT_JOYSTICK = 0;
         public static int RIGHT_JOYSTICK = 1;
     }
+
+    public static class DimensionConstants
+    {
+        public static double WHEEL_DIAMETER_M = 0.1;
+    }
 }
