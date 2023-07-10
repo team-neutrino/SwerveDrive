@@ -3,14 +3,14 @@ package frc.robot;
 public class Constants {
     
     public static class Swerve {
-       public static int FLA;
-       public static int FRA;
-       public static int BLA; 
-       public static int BRA;
-       public static int FLS;
-       public static int FRS;
-       public static int BLS;
-       public static int BRS;
+       public static int FLA = 1;
+       public static int FRA = 2;
+       public static int BLA = 3; 
+       public static int BRA = 4;
+       public static int FLS = 5;
+       public static int FRS = 6;
+       public static int BLS = 7;
+       public static int BRS = 8;
 
 
        public static double frontRightX = 0.5;
