@@ -2,7 +2,7 @@ package frc.robot;
 
 public class Constants {
     
-    public static class Swervestuff {
+    public static class Swerve {
        public static int FLA;
        public static int FRA;
        public static int BLA; 
@@ -23,5 +23,10 @@ public class Constants {
        public static double backLeftY = 1;
         
        public static double angularVelocity = Math.PI/2;
+
+       //PID constants
+       public static double P = 0.0;
+       public static double I;
+       public static double D;
     }
 }

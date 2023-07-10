@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 import frc.robot.Constants;
+import frc.robot.SwerveModule;
 import frc.robot.Constants.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,89 +10,76 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.kauailabs.navx.frc.AHRS;
 
 public class SwerveSubsystem extends SubsystemBase {
     
-    private CANSparkMax m_frontLeftAngle =
-    new CANSparkMax(Swervestuff.FLA, MotorType.kBrushless);
-    private CANSparkMax m_frontRightAngle =
-    new CANSparkMax(Swervestuff.FRA, MotorType.kBrushless);
-    private CANSparkMax m_backLeftAngle =
-    new CANSparkMax(Swervestuff.BLA, MotorType.kBrushless);
-    private CANSparkMax m_backRightAngle =
-    new CANSparkMax(Swervestuff.BRA, MotorType.kBrushless);
-
-    private CANSparkMax m_frontLeftSpeed =
-    new CANSparkMax(Swervestuff.FLS, MotorType.kBrushless);
-    private CANSparkMax m_frontRightSpeed =
-    new CANSparkMax(Swervestuff.FRS, MotorType.kBrushless);
-    private CANSparkMax m_backLeftSpeed =
-    new CANSparkMax(Swervestuff.BLS, MotorType.kBrushless);
-    private CANSparkMax m_backRightSpeed =
-    new CANSparkMax(Swervestuff.BRS, MotorType.kBrushless);
-
-    private RelativeEncoder m_encoderFLA;
-    private RelativeEncoder m_encoderFRA;
-    private RelativeEncoder m_encoderBLA;
-    private RelativeEncoder m_encoderBRA;
-    private RelativeEncoder m_encoderFLS;
-    private RelativeEncoder m_encoderFRS;
-    private RelativeEncoder m_encoderBLS;
-    private RelativeEncoder m_encoderBRS;
+    private SwerveModule m_frontLeft;
+    private SwerveModule m_frontRight;
+    private SwerveModule m_backLeft;
+    private SwerveModule m_backRight;
     
     private Joystick m_leftJoystick;
     private Joystick m_rightJoystick;
 
-    public SwerveSubsystem(Joystick p_leftJoystick, Joystick p_rightJoystick) {
+    private PIDController m_PIDSpeed;
+    private PIDController m_PIDAngle;
 
-        m_encoderFLA = initializeMotor(m_frontLeftAngle);
-        m_encoderFRA = initializeMotor(m_frontRightAngle);
-        m_encoderBLA = initializeMotor(m_backLeftAngle);
-        m_encoderBRA = initializeMotor(m_backRightAngle);
-        m_encoderFLS = initializeMotor(m_frontLeftSpeed);
-        m_encoderFRS = initializeMotor(m_frontRightSpeed);
-        m_encoderBLS = initializeMotor(m_backLeftSpeed);
-        m_encoderBRS = initializeMotor(m_backRightSpeed);
+    private AHRS m_navX = new AHRS(SPI.Port.kMXP);
 
-
-    }
-
-
-    private RelativeEncoder initializeMotor(CANSparkMax p_motor) {
-        RelativeEncoder p_encoder;
-
-        p_motor.restoreFactoryDefaults();
-        p_motor.setIdleMode(IdleMode.kBrake);
-
-        p_encoder = p_motor.getEncoder();
-        return p_encoder;
-  }
-
-
-
-    Translation2d m_frontRightModule = new Translation2d(Swervestuff.frontRightX, Swervestuff.frontRightY);
-    Translation2d m_frontLeftModule = new Translation2d(Swervestuff.frontLeftX, Swervestuff.frontLeftY);
-    Translation2d m_backRightModule = new Translation2d(Swervestuff.backRightX, Swervestuff.backRightY);
-    Translation2d m_backLeftModule = new Translation2d(Swervestuff.backLeftX, Swervestuff.backLeftY);
+    Translation2d m_frontRightModule = new Translation2d(Swerve.frontRightX, Swerve.frontRightY);
+    Translation2d m_frontLeftModule = new Translation2d(Swerve.frontLeftX, Swerve.frontLeftY);
+    Translation2d m_backRightModule = new Translation2d(Swerve.backRightX, Swerve.backRightY);
+    Translation2d m_backLeftModule = new Translation2d(Swerve.backLeftX, Swerve.backLeftY);
 
     SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightModule, m_frontLeftModule, m_backRightModule, m_backLeftModule);
 
+    public SwerveSubsystem(Joystick p_leftJoystick, Joystick p_rightJoystick) {
 
-    public void Swerve(double strafe, double forward, double angle) {
+        m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
+        m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS);
+        m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
+        m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
-        ChassisSpeeds moduleSpeeds = new ChassisSpeeds(forward, strafe, angle);
+        m_PIDSpeed = new PIDController(Constants.Swerve.P, 0, 0);
+        m_PIDAngle = new PIDController(Constants.Swerve.P, 0, 0);
+    }
+
+    public void Swerve(double vx, double vy, double omega) {
+
+        //vx: input joystick Y value
+        //vy: input joystick X value
+        //omega: input joystick angular value
+
+        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
+
         SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
+        
         SwerveModuleState frontLeft = moduleStates[0];
         SwerveModuleState frontRight = moduleStates[1];
         SwerveModuleState backLeft = moduleStates[2];
         SwerveModuleState backRight = moduleStates[3];
     }
 
+    public double getYaw() {
+        return m_navX.getYaw();
+    }
+
+    public double getPitch() {
+        return m_navX.getPitch();
+    }
+
+    public double getRoll() {
+        return m_navX.getRoll();
+    }
+
+    @Override
+    public void periodic()
+    {
+        
+    }
 
 
 }
