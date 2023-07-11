@@ -34,7 +34,7 @@ public class SwerveModule {
         speedMotor.setIdleMode(IdleMode.kBrake);
 
         angleEncoder = angleMotor.getEncoder();
-        speedEncoder = angleMotor.getEncoder();
+        speedEncoder = speedMotor.getEncoder();
 
         //rpm to rps
         angleEncoder.setVelocityConversionFactor(60); //needed?
@@ -61,11 +61,17 @@ public class SwerveModule {
       return (angleEncoder.getPosition() * 360 / 7.36) % 360; 
     }
 
-    public double getSpeed()
+    public double getSpeedRPS()
     {
       //default returns RPM, conversion is 60 so it should be returning
       //rotations per second
       return speedEncoder.getVelocity();
+    }
+
+    public double getSpeedMPS()
+    {
+      //returns the wheel speeds in m/s instead of r/s
+      return speedEncoder.getVelocity() * Constants.DimensionConstants.WHEEL_DIAMETER_M;
     }
 
     // public void setAngle(double speed)

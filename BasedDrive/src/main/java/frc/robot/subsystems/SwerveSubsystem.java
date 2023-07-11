@@ -2,7 +2,9 @@ package frc.robot.subsystems;
 import frc.robot.Constants;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.*;
+import frc.robot.util.Limiter;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -28,6 +30,8 @@ public class SwerveSubsystem extends SubsystemBase {
     
     private PIDController m_PIDSpeed;
     private PIDController m_PIDAngle;
+
+    private SimpleMotorFeedforward m_feedForward;
 
     private AHRS m_navX = new AHRS(SPI.Port.kMXP);
 
@@ -57,6 +61,9 @@ public class SwerveSubsystem extends SubsystemBase {
         //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
         m_PIDAngle.enableContinuousInput(-1.0, 1.0);
 
+        //I think we're only using feedforward for the wheel speed, not module angle
+        m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
+
         //SIMULATION
         SmartDashboard.putData("Field", field);
         field.getRobotObject().close();
@@ -68,12 +75,21 @@ public class SwerveSubsystem extends SubsystemBase {
         //vy: input joystick X value (left joystick)
         //omega: input joystick angular value (right joystick)
 
+        //do scaling multiplication here later
+        vx = Limiter.deadzone(vx, 0.1);
+        vy = Limiter.deadzone(vy, 0.1);
+        omega = Limiter.deadzone(omega, 0.1);
+
         //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
         //reference the fromfieldRelativeSpeeds method docs as necessary for more exact defintion of parameters and output
 
         //something to consider, module angle rate of change should be limited to prevent skidding when translated quickly
         //RobotCasserole uses interpolation with a look up table, might be useful
+
+        //just reading through the navx docs, they suggest "plan for catastrophic sensor failure" by using isConnected()
+        //and only using data when this is true. I can't recall ever using this in the past, but why not start now ig
+        //(if we want to)
 
         ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
@@ -84,7 +100,7 @@ public class SwerveSubsystem extends SubsystemBase {
         SwerveModuleState backLeftState = moduleStates[2];
         SwerveModuleState backRightState = moduleStates[3];
 
-        //optimization, module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
+        //optimization: module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
         //reduce correction amount
         frontLeftState = SwerveModuleState.optimize(frontLeftState, Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
         frontRightState = SwerveModuleState.optimize(frontRightState, Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
@@ -95,31 +111,40 @@ public class SwerveSubsystem extends SubsystemBase {
         //units are already the same but how many degrees is part of a real rotation is technically different for the motor and module at large
         //... 
 
+        //ok im making the change ^^ if it doesn't work switch the methods back but I think this is correct
+
+        //Feedforward. This will output a voltage but we are using normalized control (rn) thus the extra division
+        //current gains are 0 so this step does nothing until those are changed
+        double frontLeftFF = m_feedForward.calculate(frontLeftState.speedMetersPerSecond) / 12;
+        double frontRightFF = m_feedForward.calculate(frontRightState.speedMetersPerSecond) / 12;
+        double backLeftFF = m_feedForward.calculate(backLeftState.speedMetersPerSecond) / 12;
+        double backRightFF = m_feedForward.calculate(backRightState.speedMetersPerSecond) / 12;
+
         //PID on wheel speeds
-        double frontLeftWheelOutput = m_PIDSpeed.calculate(
-            m_frontLeft.getSpeed(), frontLeftState.speedMetersPerSecond);
+        double frontLeftWheelOutput = frontLeftFF + m_PIDSpeed.calculate(
+            m_frontLeft.getSpeedMPS(), frontLeftState.speedMetersPerSecond);
     
-        double frontRightWheelOutput = m_PIDSpeed.calculate(
-            m_frontRight.getSpeed(), frontRightState.speedMetersPerSecond);
+        double frontRightWheelOutput = frontRightFF + m_PIDSpeed.calculate(
+            m_frontRight.getSpeedMPS(), frontRightState.speedMetersPerSecond);
         
-        double backLeftWheelOutput = m_PIDSpeed.calculate(
-            m_backLeft.getSpeed(), backLeftState.speedMetersPerSecond);
+        double backLeftWheelOutput = backLeftFF + m_PIDSpeed.calculate(
+            m_backLeft.getSpeedMPS(), backLeftState.speedMetersPerSecond);
         
-        double backRightWheelOutput = m_PIDSpeed.calculate(
-            m_backRight.getSpeed(), backRightState.speedMetersPerSecond);
+        double backRightWheelOutput = backRightFF + m_PIDSpeed.calculate(
+            m_backRight.getSpeedMPS(), backRightState.speedMetersPerSecond);
 
         //PID on module angle position
         double frontLeftAngleOutput = m_PIDAngle.calculate(
-            m_frontLeft.getDegrees() / 360, frontLeftState.angle.getDegrees() / 360);
+            m_frontLeft.getAdjustedDegrees() / 360, frontLeftState.angle.getDegrees() / 360);
 
         double frontRightAngleOutput = m_PIDAngle.calculate(
-            m_frontRight.getDegrees() / 360, frontRightState.angle.getDegrees() / 360);
+            m_frontRight.getAdjustedDegrees() / 360, frontRightState.angle.getDegrees() / 360);
 
         double backLeftAngleOutput = m_PIDAngle.calculate(
-            m_backLeft.getDegrees() / 360, backLeftState.angle.getDegrees() / 360);
+            m_backLeft.getAdjustedDegrees() / 360, backLeftState.angle.getDegrees() / 360);
 
         double backRightAngleOutput = m_PIDAngle.calculate(
-            m_backRight.getDegrees() / 360, backRightState.angle.getDegrees() / 360);
+            m_backRight.getAdjustedDegrees() / 360, backRightState.angle.getDegrees() / 360);
 
         //set wheel speeds (everything normalized from start to finish) (no multiplication of input rn)
         m_frontLeft.setSpeedVelocity(frontLeftWheelOutput);

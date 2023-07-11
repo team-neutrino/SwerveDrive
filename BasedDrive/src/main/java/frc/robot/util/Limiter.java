@@ -12,7 +12,7 @@ public class Limiter {
         return bound(in, bound, -bound);
     }
 
-    public static double deadZone(double in, double zone)
+    public static double deadzone(double in, double zone)
     {
         if (Math.abs(in) <= zone)
         {

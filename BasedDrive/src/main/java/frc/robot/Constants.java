@@ -28,6 +28,11 @@ public class Constants {
        public static double P = 0.0;
        public static double I;
        public static double D;
+
+       //Feedforward constants
+       public static double Ks = 0.0;
+       public static double Kv = 0.0;
+       //public static double Ka = 0.0; needed?
     }
 
     public static class OperatorConstants
@@ -39,6 +44,7 @@ public class Constants {
 
     public static class DimensionConstants
     {
-        public static double WHEEL_DIAMETER_M = 0.1;
+        //if I'm not mistaken, 4.064 inches
+        public static double WHEEL_DIAMETER_M = 0.1032256;
     }
 }
