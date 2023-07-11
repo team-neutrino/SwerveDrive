@@ -62,9 +62,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void Swerve(double vx, double vy, double omega) {
 
-        //vx: input joystick Y value
-        //vy: input joystick X value
-        //omega: input joystick angular value
+        //vx: input joystick Y value (left joystick)
+        //vy: input joystick X value (left joystick)
+        //omega: input joystick angular value (right joystick)
 
         //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
@@ -109,7 +109,7 @@ public class SwerveSubsystem extends SubsystemBase {
         double backRightAngleOutput = m_PIDAngle.calculate(
             m_backRight.getDegrees() / 360, backRightState.angle.getDegrees() / 360);
 
-        //set wheel speeds
+        //set wheel speeds (everything normalized from start to finish) (no multiplication of input rn)
         m_frontLeft.setSpeedVelocity(frontLeftWheelOutput);
         m_frontRight.setSpeedVelocity(frontRightWheelOutput);
         m_backLeft.setSpeedVelocity(backLeftWheelOutput);

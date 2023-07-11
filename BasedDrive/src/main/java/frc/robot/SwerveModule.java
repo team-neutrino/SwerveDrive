@@ -67,9 +67,9 @@ public class SwerveModule {
       angleMotor.setVoltage(speed);
     }
      
-    public void move(double speed, double angle) {
+    // public void move(double speed, double angle) {
         
-    }
+    // }
 
     
 }
