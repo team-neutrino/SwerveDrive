@@ -22,7 +22,7 @@ import frc.robot.Constants;
  * This is a shameless copy of Team 1736 Robot Casserole's Robot Model file. This is the only way that we know how to even attempt
  * simulation of a swerve drive. As of writing this, this is far from even running in this repo, but hopefully that will change.
  * 
- * We do not take credit for anything you see below, or phyics files for the calculations in the corresponding folder
+ * We do not take credit for anything you see below, or physics files for the calculations in the corresponding folder
  * 
  * - Noah, Aneesh
 */
