@@ -52,10 +52,10 @@ public class SwerveModule {
       return speedEncoder.getVelocity();
     }
 
-    public void setAngle(double speed)
-    {
-      speedMotor.set(speed);
-    }
+    // public void setAngle(double speed)
+    // {
+    //   speedMotor.set(speed);
+    // }
 
     public void setSpeedVelocity(double speed)
     {

@@ -137,18 +137,18 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic()
     {
-        newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
-            new SwerveModulePosition[] {
-                new SwerveModulePosition(m_frontLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontLeft.getDegrees())),
-                new SwerveModulePosition(m_frontRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontRight.getDegrees())),
-                new SwerveModulePosition(m_backLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backLeft.getDegrees())),
-                new SwerveModulePosition(m_backRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backRight.getDegrees()))
-            });
+        // newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
+        //     new SwerveModulePosition[] {
+        //         new SwerveModulePosition(m_frontLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontLeft.getDegrees())),
+        //         new SwerveModulePosition(m_frontRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontRight.getDegrees())),
+        //         new SwerveModulePosition(m_backLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backLeft.getDegrees())),
+        //         new SwerveModulePosition(m_backRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backRight.getDegrees()))
+        //     });
 
-        field.getObject("Sim Robot").setPose(newPose);
+        // field.getObject("Sim Robot").setPose(newPose);
 
         //comment this out when not simulating
-        Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
+        //Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
     }
 
 
