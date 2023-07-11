@@ -13,14 +13,14 @@ public class Constants {
        public static int BRS = 8;
 
 
-       public static double frontRightX = 0.5;
-       public static double frontLeftX = 0.5;
-       public static double backRightX = -0.5;
-       public static double backLeftX = -0.5;
-       public static double frontRightY = -1;
-       public static double frontLeftY = -1;
-       public static double backRightY = 1;
-       public static double backLeftY = 1;
+       public static double frontRightX = 0.2155261469;
+       public static double frontLeftX = 0.2155261469;
+       public static double backRightX = -0.2155261469;
+       public static double backLeftX = -0.2155261469;
+       public static double frontRightY = -0.2155261469;
+       public static double frontLeftY = -0.2155261469;
+       public static double backRightY = 0.2155261469;
+       public static double backLeftY = 0.2155261469;
         
        public static double angularVelocity = Math.PI/2;
 
@@ -34,6 +34,7 @@ public class Constants {
     {
         public static int LEFT_JOYSTICK = 0;
         public static int RIGHT_JOYSTICK = 1;
+        public static int XBOX_CONTROLLER;
     }
 
     public static class DimensionConstants
