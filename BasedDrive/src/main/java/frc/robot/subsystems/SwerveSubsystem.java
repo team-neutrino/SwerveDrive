@@ -54,6 +54,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         m_PIDSpeed = new PIDController(Constants.Swerve.P, 0, 0);
         m_PIDAngle = new PIDController(Constants.Swerve.P, 0, 0);
+        //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
+        m_PIDAngle.enableContinuousInput(-1.0, 1.0);
 
         //SIMULATION
         SmartDashboard.putData("Field", field);
@@ -82,6 +84,16 @@ public class SwerveSubsystem extends SubsystemBase {
         SwerveModuleState backLeftState = moduleStates[2];
         SwerveModuleState backRightState = moduleStates[3];
 
+        //optimization, module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
+        //reduce correction amount
+        frontLeftState = SwerveModuleState.optimize(frontLeftState, Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
+        frontRightState = SwerveModuleState.optimize(frontRightState, Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
+        backLeftState = SwerveModuleState.optimize(backLeftState, Rotation2d.fromDegrees(m_backLeft.getAdjustedDegrees()));
+        backRightState = SwerveModuleState.optimize(backRightState, Rotation2d.fromDegrees(m_backRight.getAdjustedDegrees()));
+
+        //should the PID calculation use getAdjustedDegrees()? This would make it 1:1 with what's being retrieved from the module states...
+        //units are already the same but how many degrees is part of a real rotation is technically different for the motor and module at large
+        //... 
 
         //PID on wheel speeds
         double frontLeftWheelOutput = m_PIDSpeed.calculate(
