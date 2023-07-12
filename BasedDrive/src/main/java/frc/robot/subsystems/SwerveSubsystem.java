@@ -49,6 +49,9 @@ public class SwerveSubsystem extends SubsystemBase {
     Field2d field = new Field2d();
     XboxController m_driverController = new XboxController(0);
 
+    //DELETE LATER
+    double cycle = 0;
+
     public SwerveSubsystem() {
 
         m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
@@ -56,8 +59,8 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
         m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
-        m_PIDSpeed = new PIDController(Constants.Swerve.P, 0, 0);
-        m_PIDAngle = new PIDController(Constants.Swerve.P, 0, 0);
+        m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
+        m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
         //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
         m_PIDAngle.enableContinuousInput(-1.0, 1.0);
 
@@ -75,10 +78,10 @@ public class SwerveSubsystem extends SubsystemBase {
         //vy: input joystick X value (left joystick)
         //omega: input joystick angular value (right joystick)
 
-        //do scaling multiplication here later
-        vx = Limiter.deadzone(vx, 0.1);
-        vy = Limiter.deadzone(vy, 0.1);
-        omega = Limiter.deadzone(omega, 0.1);
+        //deadzones stick inputs and scales + constrains chassis velocities
+        vx = Limiter.joystickInverseNormalize(Limiter.deadzone(vx, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        vy = Limiter.joystickInverseNormalize(Limiter.deadzone(vy, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        omega = Limiter.joystickInverseNormalize(Limiter.deadzone(omega, 0.1), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
 
         //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
@@ -94,6 +97,11 @@ public class SwerveSubsystem extends SubsystemBase {
         ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
         SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
+
+        //I don't know if the line below will need to be used. After testing once it becomes clear how the chassis speeds transformation
+        //effects module speeds we can remove it or put in place a reasonable constant. Knowing the maximum wheel speed is necessary
+        //for accurate normalization however and thus hopefully useful PID (we'll see how far we can get...)
+        //SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, 1);
         
         SwerveModuleState frontLeftState = moduleStates[0];
         SwerveModuleState frontRightState = moduleStates[1];
@@ -113,25 +121,24 @@ public class SwerveSubsystem extends SubsystemBase {
 
         //ok im making the change ^^ if it doesn't work switch the methods back but I think this is correct
 
-        //Feedforward. This will output a voltage but we are using normalized control (rn) thus the extra division
-        //current gains are 0 so this step does nothing until those are changed
-        double frontLeftFF = m_feedForward.calculate(frontLeftState.speedMetersPerSecond) / 12;
-        double frontRightFF = m_feedForward.calculate(frontRightState.speedMetersPerSecond) / 12;
-        double backLeftFF = m_feedForward.calculate(backLeftState.speedMetersPerSecond) / 12;
-        double backRightFF = m_feedForward.calculate(backRightState.speedMetersPerSecond) / 12;
+        
+        double frontLeftFF = m_feedForward.calculate(frontLeftState.speedMetersPerSecond);
+        double frontRightFF = m_feedForward.calculate(frontRightState.speedMetersPerSecond);
+        double backLeftFF = m_feedForward.calculate(backLeftState.speedMetersPerSecond);
+        double backRightFF = m_feedForward.calculate(backRightState.speedMetersPerSecond);
 
         //PID on wheel speeds
         double frontLeftWheelOutput = frontLeftFF + m_PIDSpeed.calculate(
-            m_frontLeft.getSpeedMPS(), frontLeftState.speedMetersPerSecond);
+            Limiter.normalize(m_frontLeft.getVelocityMPS(), 0, 1), frontLeftState.speedMetersPerSecond);
     
         double frontRightWheelOutput = frontRightFF + m_PIDSpeed.calculate(
-            m_frontRight.getSpeedMPS(), frontRightState.speedMetersPerSecond);
+            m_frontRight.getVelocityMPS(), frontRightState.speedMetersPerSecond);
         
         double backLeftWheelOutput = backLeftFF + m_PIDSpeed.calculate(
-            m_backLeft.getSpeedMPS(), backLeftState.speedMetersPerSecond);
+            m_backLeft.getVelocityMPS(), backLeftState.speedMetersPerSecond);
         
         double backRightWheelOutput = backRightFF + m_PIDSpeed.calculate(
-            m_backRight.getSpeedMPS(), backRightState.speedMetersPerSecond);
+            m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond);
 
         //PID on module angle position
         double frontLeftAngleOutput = m_PIDAngle.calculate(
@@ -186,6 +193,24 @@ public class SwerveSubsystem extends SubsystemBase {
 
         //comment this out when not simulating
         //Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
+
+        cycle++;
+        if (cycle % 40 == 0)
+        {
+            System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
+            System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
+            System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
+            System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
+
+            SwerveModuleState frontRight = new SwerveModuleState(m_frontRight.getVelocityMPS(), Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
+            SwerveModuleState frontLeft = new SwerveModuleState(m_frontLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
+            SwerveModuleState backRight = new SwerveModuleState(m_backRight.getVelocityMPS(), Rotation2d.fromDegrees(m_backRight.getAdjustedDegrees()));
+            SwerveModuleState backLeft = new SwerveModuleState(m_backLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_backLeft.getAdjustedDegrees()));
+
+            ChassisSpeeds forwardKinematics = m_kinematics.toChassisSpeeds(frontRight, frontLeft, backRight, backLeft);
+
+            System.out.println("Current chassis x direction velocity: " + forwardKinematics.vxMetersPerSecond);
+        }
     }
 
 
