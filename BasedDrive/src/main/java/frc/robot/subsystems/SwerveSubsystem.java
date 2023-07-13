@@ -47,17 +47,18 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModulePosition[] swervePositions = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
     SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(0), swervePositions, newPose);
     Field2d field = new Field2d();
-    XboxController m_driverController = new XboxController(0);
+    //XboxController m_driverController = new XboxController(0);
 
     //DELETE LATER
     double cycle = 0;
 
     public SwerveSubsystem() {
 
-        m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
-        m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS);
-        m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
-        m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
+        //needs correct dio slots
+        m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS, 0);
+        m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS, 0);
+        m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS, 0);
+        m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS, 0);
 
         m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
         m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
@@ -66,6 +67,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         //I think we're only using feedforward for the wheel speed, not module angle
         m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
+
+        zeroYaw();
 
         //SIMULATION
         SmartDashboard.putData("Field", field);
@@ -79,9 +82,9 @@ public class SwerveSubsystem extends SubsystemBase {
         //omega: input joystick angular value (right joystick)
 
         //deadzones stick inputs and scales + constrains chassis velocities
-        vx = Limiter.joystickInverseNormalize(Limiter.deadzone(vx, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
-        vy = Limiter.joystickInverseNormalize(Limiter.deadzone(vy, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
-        omega = Limiter.joystickInverseNormalize(Limiter.deadzone(omega, 0.1), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
+        vx = Limiter.joystickScale(Limiter.deadzone(vx, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        vy = Limiter.joystickScale(Limiter.deadzone(vy, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        omega = Limiter.joystickScale(Limiter.deadzone(omega, 0.1), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
 
         //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
@@ -129,16 +132,16 @@ public class SwerveSubsystem extends SubsystemBase {
 
         //PID on wheel speeds
         double frontLeftWheelOutput = frontLeftFF + m_PIDSpeed.calculate(
-            Limiter.normalize(m_frontLeft.getVelocityMPS(), 0, 1), frontLeftState.speedMetersPerSecond);
+            m_frontLeft.getVelocityMPS(), frontLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
     
         double frontRightWheelOutput = frontRightFF + m_PIDSpeed.calculate(
-            m_frontRight.getVelocityMPS(), frontRightState.speedMetersPerSecond);
+            m_frontRight.getVelocityMPS(), frontRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
         
         double backLeftWheelOutput = backLeftFF + m_PIDSpeed.calculate(
-            m_backLeft.getVelocityMPS(), backLeftState.speedMetersPerSecond);
+            m_backLeft.getVelocityMPS(), backLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
         
         double backRightWheelOutput = backRightFF + m_PIDSpeed.calculate(
-            m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond);
+            m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
 
         //PID on module angle position
         double frontLeftAngleOutput = m_PIDAngle.calculate(
@@ -153,21 +156,21 @@ public class SwerveSubsystem extends SubsystemBase {
         double backRightAngleOutput = m_PIDAngle.calculate(
             m_backRight.getAdjustedDegrees() / 360, backRightState.angle.getDegrees() / 360);
 
-        //set wheel speeds (everything normalized from start to finish) (no multiplication of input rn)
-        m_frontLeft.setSpeedVelocity(frontLeftWheelOutput);
-        m_frontRight.setSpeedVelocity(frontRightWheelOutput);
-        m_backLeft.setSpeedVelocity(backLeftWheelOutput);
-        m_backRight.setSpeedVelocity(backRightWheelOutput);
+        //set wheel speeds
+        m_frontLeft.setWheelSpeedVolts(frontLeftWheelOutput);
+        m_frontRight.setWheelSpeedVolts(frontRightWheelOutput);
+        m_backLeft.setWheelSpeedVolts(backLeftWheelOutput);
+        m_backRight.setWheelSpeedVolts(backRightWheelOutput);
 
         //set module positions speeds (in volts)
-        m_frontLeft.setSpeedVolts(frontLeftAngleOutput * 12.0);
-        m_frontRight.setSpeedVolts(frontRightAngleOutput * 12.0);
-        m_backLeft.setSpeedVolts(backLeftAngleOutput * 12.0);
-        m_backRight.setSpeedVolts(backRightAngleOutput * 12.0);
+        m_frontLeft.setAngleSpeedVolts(frontLeftAngleOutput * 12.0);
+        m_frontRight.setAngleSpeedVolts(frontRightAngleOutput * 12.0);
+        m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
+        m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
     }
 
     public double getYaw() {
-        return m_navX.getYaw();
+        return m_navX.getYaw(); // * -1? I think the 2023 code has this for some reason
     }
 
     public double getPitch() {
@@ -176,6 +179,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public double getRoll() {
         return m_navX.getRoll();
+    }
+
+    public void zeroYaw()
+    {
+        m_navX.zeroYaw();
     }
 
     @Override
@@ -210,6 +218,12 @@ public class SwerveSubsystem extends SubsystemBase {
             ChassisSpeeds forwardKinematics = m_kinematics.toChassisSpeeds(frontRight, frontLeft, backRight, backLeft);
 
             System.out.println("Current chassis x direction velocity: " + forwardKinematics.vxMetersPerSecond);
+
+            //Absolute encoder stuff
+            System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition());
+            System.out.println("Front left encoder position" + m_frontLeft.getAbsolutePosition());
+            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
+            System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
         }
     }
 

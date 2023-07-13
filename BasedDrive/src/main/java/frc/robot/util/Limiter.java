@@ -37,25 +37,25 @@ public class Limiter {
     }
 
     /**
-     * Reverses the normalization process. Assumes that the input value is normalized to [0, 1]
+     * Reverses the normalization process or in other words scales. Assumes that the input value is normalized to [0, 1]
      * @param in input value
      * @param min minimum possible value that is desired for output
      * @param max maximum possible value that is desired for output
      * @return A reverse normalized output that is scaled to the min and max values
      */
-    public static double inverseNormalize(double in, double min, double max)
+    public static double scale(double in, double min, double max)
     {
         return in * (max - min) + min;
     }
 
     /**
-     * Inverse normalization but assumes the input value is between [-1, 1]
+     * Scale desired input between min and max. Input value should be between [-1, 1]
      * @param in input value
      * @param min minimum possible value that is desired for output
      * @param max maximum possible value that is desired for output
-     * @return A reverse normalized value that is scaled to the min and max values
+     * @return A value that is scaled for the min and max values
      */
-    public static double joystickInverseNormalize(double in, double min, double max)
+    public static double joystickScale(double in, double min, double max)
     {
         return (in + 1) * (max - min) / 2 + min;
     }

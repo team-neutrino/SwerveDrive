@@ -40,13 +40,18 @@ public class Constants {
        public static double Ks = 0.0; //0.1 - 0.15 seems to be a good starting place, possibly lower
        public static double Kv = 0.0; //robot casserole uses 0.02, so maybe 0.01?
        //public static double Ka = 0.0; needed?
+
+       //Gear ratio
+       //This ratio can vary widely (5.5:1 - 7.8:1) according to the docs. I know we went with belt, but the exact ratio
+       //is still unknown to me. I'm hoping this is correct but we'll have to check with design
+       public static double MODULE_ANGLE_GEAR_RATIO = 1/6.55;
     }
 
     public static class OperatorConstants
     {
         public static int LEFT_JOYSTICK = 0;
         public static int RIGHT_JOYSTICK = 1;
-        public static int XBOX_CONTROLLER;
+        public static int XBOX_CONTROLLER = 2;
     }
 
     public static class DimensionConstants

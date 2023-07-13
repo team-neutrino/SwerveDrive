@@ -2,6 +2,9 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 
@@ -11,8 +14,9 @@ public class SwerveModule {
     private CANSparkMax speedMotor;
     private RelativeEncoder angleEncoder;
     private RelativeEncoder speedEncoder;
+    private DutyCycleEncoder absAngleEncoder;
 
-    public SwerveModule(int angleID, int speedID) {
+    public SwerveModule(int angleID, int speedID, int absEncoderSlot) {
 
         /*
          * This file follows the convention that the speed encoder and motor relate to the physical hardware that is 
@@ -36,17 +40,31 @@ public class SwerveModule {
         angleEncoder = angleMotor.getEncoder();
         speedEncoder = speedMotor.getEncoder();
 
+        absAngleEncoder = new DutyCycleEncoder(absEncoderSlot); //needs correct dio slot
+
         //rpm to rps
         angleEncoder.setVelocityConversionFactor(60); //needed?
         speedEncoder.setVelocityConversionFactor(60);
 
-        //The swerve module gear ratio is 7.36:1; dividing by this should return the module rotations
-        //angleEncoder.setPositionConversionFactor(1/7.36); needed???
+        //assuming we can get abs encoders to work
+        //this should make it so we can use relative encoders after the correct position has been initialized
+        //oh and also make sure that the conversion between absolute encoder position and module angle is completely understood
+        //because when the relative positions are set the abs:relative position is not going to be 1:1 and thus going through some
+        //scaling will have to happen in order to get the relative encoders to work
+        //angleEncoder.setPosition(getAbsolutePosition - measuredOffset)
+
+        //The swerve module gear ratio is 6.55:1; dividing by this should return the module rotations
+        //angleEncoder.setPositionConversionFactor(360 / 6.55); needed???
     }
 
     public double getRotations()
     {
         return angleEncoder.getPosition(); 
+    }
+
+    public double getAbsolutePosition()
+    {
+      return absAngleEncoder.getAbsolutePosition();
     }
 
     public double getDegrees()
@@ -58,7 +76,8 @@ public class SwerveModule {
     public double getAdjustedDegrees()
     {
       //accounting for gear ratio? Now they should both be in degrees but are 1:1 for optimization (among other things)
-      return (angleEncoder.getPosition() * 360 / 7.36) % 360; 
+      //range is (-360, 360)
+      return (angleEncoder.getPosition() * 360 / 6.55) % 360; 
     }
 
     public double getVelocityRPS()
@@ -84,9 +103,14 @@ public class SwerveModule {
       speedMotor.set(speed);
     }
 
-    public void setSpeedVolts(double speed)
+    public void setWheelSpeedVolts(double volts)
     {
-      angleMotor.setVoltage(speed);
+      speedMotor.setVoltage(volts);
+    }
+
+    public void setAngleSpeedVolts(double volts)
+    {
+      angleMotor.setVoltage(volts);
     }
      
     // public void move(double speed, double angle) {
