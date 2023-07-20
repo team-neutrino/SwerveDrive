@@ -70,6 +70,11 @@ public class SwerveModule {
       return absAngleEncoder.getAbsolutePosition();
     }
 
+    public double getAbsolutePositionDegrees()
+    {
+      return absAngleEncoder.getAbsolutePosition() * 360;
+    }
+
     public double getDegrees()
     //in degrees
     {
@@ -125,5 +130,14 @@ public class SwerveModule {
         
     // }
 
+    public void resetAbsEncoder()
+    {
+      absAngleEncoder.reset();
+    }
+
+    public double getPositionOffset()
+    {
+      return absAngleEncoder.getPositionOffset();
+    }
     
 }
