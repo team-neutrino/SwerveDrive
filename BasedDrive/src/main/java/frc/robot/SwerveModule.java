@@ -3,6 +3,7 @@ package frc.robot;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import com.revrobotics.RelativeEncoder;
@@ -14,7 +15,7 @@ public class SwerveModule {
     private CANSparkMax speedMotor;
     private RelativeEncoder angleEncoder;
     private RelativeEncoder speedEncoder;
-    private DutyCycleEncoder absAngleEncoder;
+    private AnalogEncoder absAngleEncoder;
 
     public SwerveModule(int angleID, int speedID, int absEncoderSlot) {
 
@@ -40,7 +41,9 @@ public class SwerveModule {
         angleEncoder = angleMotor.getEncoder();
         speedEncoder = speedMotor.getEncoder();
 
-        absAngleEncoder = new DutyCycleEncoder(absEncoderSlot); //needs correct dio slot
+        absAngleEncoder = new AnalogEncoder(absEncoderSlot); //needs correct analog slot (bottom of rio)
+        //it might not be a constant for every motor but for now it's set here
+        //absAngleEncoder.setPositionOffset(0);
 
         //rpm to rps
         angleEncoder.setVelocityConversionFactor(60); //needed?
@@ -51,9 +54,9 @@ public class SwerveModule {
         //oh and also make sure that the conversion between absolute encoder position and module angle is completely understood
         //because when the relative positions are set the abs:relative position is not going to be 1:1 and thus going through some
         //scaling will have to happen in order to get the relative encoders to work
-        //angleEncoder.setPosition(getAbsolutePosition - measuredOffset)
+        //angleEncoder.setPosition(absAngleEncoder.getAbsolutePosition() - absAngleEncoder.getPositionOffset());
 
-        //The swerve module gear ratio is 6.55:1; dividing by this should return the module rotations
+        //The swerve module gear ratio is 6.55:1; dividing by this should return the module rotations in degrees
         //angleEncoder.setPositionConversionFactor(360 / 6.55); needed???
     }
 
@@ -111,6 +114,11 @@ public class SwerveModule {
     public void setAngleSpeedVolts(double volts)
     {
       angleMotor.setVoltage(volts);
+    }
+
+    public void setAngleSpeedNormalized(double in)
+    {
+      angleMotor.set(in);
     }
      
     // public void move(double speed, double angle) {

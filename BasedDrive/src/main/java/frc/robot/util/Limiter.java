@@ -37,7 +37,7 @@ public class Limiter {
     }
 
     /**
-     * Reverses the normalization process or in other words scales. Assumes that the input value is normalized to [0, 1]
+     * Reverses the normalization process or in other words scales the input. Assumes that the input value is normalized to [0, 1]
      * @param in input value
      * @param min minimum possible value that is desired for output
      * @param max maximum possible value that is desired for output

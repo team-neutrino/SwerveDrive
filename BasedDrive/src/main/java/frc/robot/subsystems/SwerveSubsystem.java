@@ -63,7 +63,7 @@ public class SwerveSubsystem extends SubsystemBase {
         m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
         m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
         //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
-        m_PIDAngle.enableContinuousInput(-1.0, 1.0);
+        m_PIDAngle.enableContinuousInput(0.0, 360.0);
 
         //I think we're only using feedforward for the wheel speed, not module angle
         m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
@@ -144,17 +144,17 @@ public class SwerveSubsystem extends SubsystemBase {
             m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
 
         //PID on module angle position
-        double frontLeftAngleOutput = m_PIDAngle.calculate(
-            m_frontLeft.getAdjustedDegrees() / 360, frontLeftState.angle.getDegrees() / 360);
+        double frontLeftAngleOutput = Limiter.normalize(m_PIDAngle.calculate(
+            m_frontLeft.getAbsolutePosition() * 360, frontLeftState.angle.getDegrees()), 0, 360);
 
-        double frontRightAngleOutput = m_PIDAngle.calculate(
-            m_frontRight.getAdjustedDegrees() / 360, frontRightState.angle.getDegrees() / 360);
+        double frontRightAngleOutput = Limiter.normalize(m_PIDAngle.calculate(
+            m_frontRight.getAbsolutePosition() * 360, frontRightState.angle.getDegrees()), 0, 360);
 
         double backLeftAngleOutput = m_PIDAngle.calculate(
-            m_backLeft.getAdjustedDegrees() / 360, backLeftState.angle.getDegrees() / 360);
+            m_backLeft.getAbsolutePosition() * 360, backLeftState.angle.getDegrees());
 
         double backRightAngleOutput = m_PIDAngle.calculate(
-            m_backRight.getAdjustedDegrees() / 360, backRightState.angle.getDegrees() / 360);
+            m_backRight.getAbsolutePosition() * 360, backRightState.angle.getDegrees());
 
         //set wheel speeds
         m_frontLeft.setWheelSpeedVolts(frontLeftWheelOutput);
@@ -184,6 +184,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public void zeroYaw()
     {
         m_navX.zeroYaw();
+        System.out.println("NavX yaw has been zeroed---------------");
     }
 
     @Override
@@ -210,14 +211,14 @@ public class SwerveSubsystem extends SubsystemBase {
             System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
             System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
 
-            SwerveModuleState frontRight = new SwerveModuleState(m_frontRight.getVelocityMPS(), Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
-            SwerveModuleState frontLeft = new SwerveModuleState(m_frontLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
-            SwerveModuleState backRight = new SwerveModuleState(m_backRight.getVelocityMPS(), Rotation2d.fromDegrees(m_backRight.getAdjustedDegrees()));
-            SwerveModuleState backLeft = new SwerveModuleState(m_backLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_backLeft.getAdjustedDegrees()));
+            // SwerveModuleState frontRight = new SwerveModuleState(m_frontRight.getVelocityMPS(), Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
+            // SwerveModuleState frontLeft = new SwerveModuleState(m_frontLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
+            // SwerveModuleState backRight = new SwerveModuleState(m_backRight.getVelocityMPS(), Rotation2d.fromDegrees(m_backRight.getAdjustedDegrees()));
+            // SwerveModuleState backLeft = new SwerveModuleState(m_backLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_backLeft.getAdjustedDegrees()));
 
-            ChassisSpeeds forwardKinematics = m_kinematics.toChassisSpeeds(frontRight, frontLeft, backRight, backLeft);
+            // ChassisSpeeds forwardKinematics = m_kinematics.toChassisSpeeds(frontRight, frontLeft, backRight, backLeft);
 
-            System.out.println("Current chassis x direction velocity: " + forwardKinematics.vxMetersPerSecond);
+            // System.out.println("Current chassis x direction velocity: " + forwardKinematics.vxMetersPerSecond);
 
             //Absolute encoder stuff
             System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition());
