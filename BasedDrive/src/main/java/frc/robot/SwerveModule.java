@@ -47,6 +47,9 @@ public class SwerveModule {
         angleEncoder = angleMotor.getEncoder();
         speedEncoder = speedMotor.getEncoder();
 
+        //somewhere in here the position conversion factor has to be set with the abs encoder so that the pid is getting the same
+        //units for its reference and actual input
+
         absAngleEncoder = angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
 
         pidController = angleMotor.getPIDController();
