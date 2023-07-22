@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -7,6 +8,10 @@ import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxAbsoluteEncoder;
+import com.revrobotics.SparkMaxAnalogSensor;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 public class SwerveModule {
@@ -15,9 +20,10 @@ public class SwerveModule {
     private CANSparkMax speedMotor;
     private RelativeEncoder angleEncoder;
     private RelativeEncoder speedEncoder;
-    private AnalogEncoder absAngleEncoder;
+    private SparkMaxAnalogSensor absAngleEncoder;
+    private SparkMaxPIDController pidController;
 
-    public SwerveModule(int angleID, int speedID, int absEncoderSlot) {
+    public SwerveModule(int angleID, int speedID) {
 
         /*
          * This file follows the convention that the speed encoder and motor relate to the physical hardware that is 
@@ -41,9 +47,18 @@ public class SwerveModule {
         angleEncoder = angleMotor.getEncoder();
         speedEncoder = speedMotor.getEncoder();
 
-        absAngleEncoder = new AnalogEncoder(absEncoderSlot); //needs correct analog slot (bottom of rio)
+        absAngleEncoder = angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
+
+        pidController = angleMotor.getPIDController();
+        pidController.setFeedbackDevice(absAngleEncoder);
+        pidController.setP(Constants.Swerve.ANGLE_P);
+
+        //needed for finding position offset?
+        //angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+
+
         //it might not be a constant for every motor but for now it's set here
-        //absAngleEncoder.setPositionOffset(0);
+        //absAngleEncoder.setZeroOffset(0);
 
         //rpm to rps
         angleEncoder.setVelocityConversionFactor(60); //needed?
@@ -67,12 +82,12 @@ public class SwerveModule {
 
     public double getAbsolutePosition()
     {
-      return absAngleEncoder.getAbsolutePosition();
+      return absAngleEncoder.getPosition();
     }
 
     public double getAbsolutePositionDegrees()
     {
-      return absAngleEncoder.getAbsolutePosition() * 360;
+      return absAngleEncoder.getPosition() * 360;
     }
 
     public double getDegrees()
@@ -125,19 +140,24 @@ public class SwerveModule {
     {
       angleMotor.set(in);
     }
+
+    public void runPID(double reference)
+    {
+      pidController.setReference(reference, ControlType.kPosition);
+    }
      
     // public void move(double speed, double angle) {
         
     // }
 
-    public void resetAbsEncoder()
-    {
-      absAngleEncoder.reset();
-    }
+    // public void resetAbsEncoder()
+    // {
+    //   absAngleEncoder.reset();
+    // }
 
-    public double getPositionOffset()
-    {
-      return absAngleEncoder.getPositionOffset();
-    }
+    // public double getPositionOffset()
+    // {
+    //   return absAngleEncoder.getPositionOffset();
+    // }
     
 }

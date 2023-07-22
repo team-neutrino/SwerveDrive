@@ -55,10 +55,10 @@ public class SwerveSubsystem extends SubsystemBase {
     public SwerveSubsystem() {
 
         //needs correct dio slots
-        m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS, 0);
-        m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS, 0);
-        m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS, 0);
-        m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS, 0);
+        m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
+        m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS);
+        m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
+        m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
         m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
         m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
@@ -166,10 +166,15 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backRight.setWheelSpeedVolts(backRightWheelOutput);
 
         //set module position speeds (in volts)
-        m_frontLeft.setAngleSpeedVolts(frontLeftAngleOutput * 12.0);
-        m_frontRight.setAngleSpeedVolts(frontRightAngleOutput * 12.0);
-        m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
-        m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
+        // m_frontLeft.setAngleSpeedVolts(frontLeftAngleOutput * 12.0);
+        // m_frontRight.setAngleSpeedVolts(frontRightAngleOutput * 12.0);
+        // m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
+        // m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
+
+        // m_frontLeft.runPID(frontLeftState.angle.getDegrees());
+        // m_frontRight.runPID(frontRightState.angle.getDegrees());
+        // m_backLeft.runPID(backLeftState.angle.getDegrees());
+        // m_backRight.runPID(backRightState.angle.getDegrees());
     }
 
     public double getYaw() {
@@ -190,14 +195,14 @@ public class SwerveSubsystem extends SubsystemBase {
         System.out.println("NavX yaw has been zeroed---------------");
     }
 
-    public void resetAllModuleAbsEncoders()
-    {
-        m_frontRight.resetAbsEncoder();
-        m_frontLeft.resetAbsEncoder();
-        m_backRight.resetAbsEncoder();
-        m_backLeft.resetAbsEncoder();
-        System.out.println("abs encoders reset-----------------");
-    }
+    // public void resetAllModuleAbsEncoders()
+    // {
+    //     m_frontRight.resetAbsEncoder();
+    //     m_frontLeft.resetAbsEncoder();
+    //     m_backRight.resetAbsEncoder();
+    //     m_backLeft.resetAbsEncoder();
+    //     System.out.println("abs encoders reset-----------------");
+    // }
 
     @Override
     public void periodic()
@@ -238,10 +243,10 @@ public class SwerveSubsystem extends SubsystemBase {
             System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
             System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
 
-            System.out.println("Front right position offset " + m_frontRight.getPositionOffset());
-            System.out.println("Front left position offset " + m_frontLeft.getPositionOffset());
-            System.out.println("Back right position offset " + m_backRight.getPositionOffset());
-            System.out.println("Back left position offset " + m_backRight.getPositionOffset());
+            // System.out.println("Front right position offset " + m_frontRight.getPositionOffset());
+            // System.out.println("Front left position offset " + m_frontLeft.getPositionOffset());
+            // System.out.println("Back right position offset " + m_backRight.getPositionOffset());
+            // System.out.println("Back left position offset " + m_backRight.getPositionOffset());
         }
     }
 
