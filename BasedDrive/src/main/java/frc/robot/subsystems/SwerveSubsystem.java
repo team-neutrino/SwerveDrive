@@ -54,7 +54,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public SwerveSubsystem() {
 
-        //needs correct dio slots
         m_frontLeft = new SwerveModule(Swerve.FLA, Swerve.FLS);
         m_frontRight = new SwerveModule(Swerve.FRA, Swerve.FRS);
         m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
@@ -96,6 +95,9 @@ public class SwerveSubsystem extends SubsystemBase {
         //just reading through the navx docs, they suggest "plan for catastrophic sensor failure" by using isConnected()
         //and only using data when this is true. I can't recall ever using this in the past, but why not start now ig
         //(if we want to)
+
+        // System.out.println("vx " + vx);
+        // System.out.println("vy " + vy);
 
         ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
@@ -160,10 +162,10 @@ public class SwerveSubsystem extends SubsystemBase {
             m_backRight.getAbsolutePosition() * 360, backRightState.angle.getDegrees());
 
         //set wheel speeds
-        m_frontLeft.setWheelSpeedVolts(frontLeftWheelOutput);
-        m_frontRight.setWheelSpeedVolts(frontRightWheelOutput);
-        m_backLeft.setWheelSpeedVolts(backLeftWheelOutput);
-        m_backRight.setWheelSpeedVolts(backRightWheelOutput);
+        // m_frontLeft.setWheelSpeedVolts(frontLeftWheelOutput);
+        // m_frontRight.setWheelSpeedVolts(frontRightWheelOutput);
+        // m_backLeft.setWheelSpeedVolts(backLeftWheelOutput);
+        // m_backRight.setWheelSpeedVolts(backRightWheelOutput);
 
         //set module position speeds (in volts)
         // m_frontLeft.setAngleSpeedVolts(frontLeftAngleOutput * 12.0);
@@ -171,10 +173,28 @@ public class SwerveSubsystem extends SubsystemBase {
         // m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
         // m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
 
-        // m_frontLeft.runPID(frontLeftState.angle.getDegrees());
-        // m_frontRight.runPID(frontRightState.angle.getDegrees());
-        // m_backLeft.runPID(backLeftState.angle.getDegrees());
-        // m_backRight.runPID(backRightState.angle.getDegrees());
+        for (int i = 0; i < 4; i++)
+        {
+            if (moduleStates[i].angle.getDegrees() < 0)
+            {
+                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() + 180);
+            }
+        }
+
+        m_frontLeft.runPID(frontLeftState.angle.getDegrees());
+        m_frontRight.runPID(frontRightState.angle.getDegrees());
+        m_backLeft.runPID(backLeftState.angle.getDegrees());
+        m_backRight.runPID(backRightState.angle.getDegrees());
+
+        
+        if (cycle % 40 == 0)
+        {
+            
+        }
+        // if (Math.signum(backRightState.angle.getDegrees()) == -1)
+        // {
+        //     m_backRight.runPID(backRightState.angle.getDegrees() + 180);
+        // }
     }
 
     public double getYaw() {
@@ -220,13 +240,19 @@ public class SwerveSubsystem extends SubsystemBase {
         //comment this out when not simulating
         //Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
 
+        // System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
+        // System.out.println("Back right encoder position adjusted " + m_backRight.getAbsolutePositionAdjusted());
+        //System.out.println("Back right encoder voltage " + m_backRight.getAbsEncoderVoltage());
+
+        
+
         cycle++;
         if (cycle % 40 == 0)
         {
-            System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
-            System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
-            System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
-            System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
+            // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
+            // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
+            // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
+            // System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
 
             // SwerveModuleState frontRight = new SwerveModuleState(m_frontRight.getVelocityMPS(), Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
             // SwerveModuleState frontLeft = new SwerveModuleState(m_frontLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
@@ -238,15 +264,17 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("Current chassis x direction velocity: " + forwardKinematics.vxMetersPerSecond);
 
             //Absolute encoder stuff
-            System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition());
-            System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
-            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
-            System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
+            // System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition());
+            // System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
+            // System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
+            // System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
 
             // System.out.println("Front right position offset " + m_frontRight.getPositionOffset());
             // System.out.println("Front left position offset " + m_frontLeft.getPositionOffset());
             // System.out.println("Back right position offset " + m_backRight.getPositionOffset());
-            // System.out.println("Back left position offset " + m_backRight.getPositionOffset());
+            // System.out.println("Back left position offset " + m_backRight.getPositionOffset
+
+            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
         }
     }
 

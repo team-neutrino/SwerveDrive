@@ -3,14 +3,15 @@ package frc.robot;
 public class Constants {
     
     public static class Swerve {
-       public static int FLA = 1;
-       public static int FRA = 2;
-       public static int BLA = 3; 
+       public static int FLA = 8;
+       public static int FRA = 6;
+       public static int BLA = 2; 
        public static int BRA = 4;
-       public static int FLS = 5;
-       public static int FRS = 6;
-       public static int BLS = 7;
-       public static int BRS = 8;
+
+       public static int FLS = 7;
+       public static int FRS = 5;
+       public static int BLS = 1;
+       public static int BRS = 3;
 
 
        public static double frontRightX = 0.2155261469;
@@ -32,7 +33,7 @@ public class Constants {
        //PID constants
        //Note that robot casserole's units are way different than ours so the commented values are likely VERY arbitrary
        public static double SPEED_P = 0.0; //robot casserole uses 0.08
-       public static double ANGLE_P = 0.0; //robot casserole uses 0.015. 
+       public static double ANGLE_P = 0.0004; //robot casserole uses 0.015. 
        public static double I;
        public static double D;
 
@@ -49,9 +50,9 @@ public class Constants {
 
     public static class OperatorConstants
     {
-        public static int LEFT_JOYSTICK = 0;
+        public static int LEFT_JOYSTICK = 2;
         public static int RIGHT_JOYSTICK = 1;
-        public static int XBOX_CONTROLLER = 2;
+        public static int XBOX_CONTROLLER = 0;
     }
 
     public static class DimensionConstants

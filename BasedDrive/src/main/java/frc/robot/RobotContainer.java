@@ -24,7 +24,7 @@ public class RobotContainer {
   SwerveSubsystem m_swerve = new SwerveSubsystem();
 
   //COMMANDS
-  SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve);
+  SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve, m_controller);
 
   //BUTTONS
   private final JoystickButton m_buttonX = new JoystickButton(m_controller, XboxController.Button.kX.value);

@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -14,12 +15,14 @@ public class SwerveDefaultCommand extends CommandBase {
     SwerveSubsystem m_swerveSubsystem;
     Joystick m_leftJoystick;
     Joystick m_rightJoystick;
+    XboxController m_controller;
 
-    public SwerveDefaultCommand(Joystick p_rightJoystick, Joystick p_leftJoystick, SwerveSubsystem p_swerveSubsystem) {
+    public SwerveDefaultCommand(Joystick p_rightJoystick, Joystick p_leftJoystick, SwerveSubsystem p_swerveSubsystem, XboxController p_controller) {
         // Use addRequirements() here to declare subsystem dependencies.
         m_swerveSubsystem = p_swerveSubsystem;
         m_leftJoystick = p_leftJoystick;
         m_rightJoystick = p_rightJoystick;
+        m_controller = p_controller;
         addRequirements(m_swerveSubsystem);
     }
 
@@ -30,7 +33,7 @@ public class SwerveDefaultCommand extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
         @Override
     public void execute() {
-        m_swerveSubsystem.Swerve(m_leftJoystick.getY(), m_leftJoystick.getX(), m_rightJoystick.getX());
+        m_swerveSubsystem.Swerve(m_controller.getLeftY() * -1, m_controller.getLeftX() * -1, m_controller.getRightX());
     
     }
 

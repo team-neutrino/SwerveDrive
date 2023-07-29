@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import frc.robot.util.Limiter;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
@@ -21,6 +22,8 @@ public class SwerveModule {
     private RelativeEncoder angleEncoder;
     private RelativeEncoder speedEncoder;
     private SparkMaxAnalogSensor absAngleEncoder;
+    SparkMaxAbsoluteEncoder absAngleEncoder2;
+    AnalogEncoder absAngleEncoder3;
     private SparkMaxPIDController pidController;
 
     public SwerveModule(int angleID, int speedID) {
@@ -51,10 +54,16 @@ public class SwerveModule {
         //units for its reference and actual input
 
         absAngleEncoder = angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
+        absAngleEncoder.setPositionConversionFactor(360 / 3.3);
+        absAngleEncoder2 = angleMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
 
         pidController = angleMotor.getPIDController();
         pidController.setFeedbackDevice(absAngleEncoder);
         pidController.setP(Constants.Swerve.ANGLE_P);
+        pidController.setD(0.00001);
+        pidController.setPositionPIDWrappingEnabled(true);
+        pidController.setPositionPIDWrappingMaxInput(360);
+        pidController.setPositionPIDWrappingMinInput(0);
 
         //needed for finding position offset?
         //angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
@@ -88,9 +97,9 @@ public class SwerveModule {
       return absAngleEncoder.getPosition();
     }
 
-    public double getAbsolutePositionDegrees()
+    public double getAbsolutePositionAdjusted()
     {
-      return absAngleEncoder.getPosition() * 360;
+      return Limiter.scale(absAngleEncoder.getPosition(), -180, 180);
     }
 
     public double getDegrees()
@@ -147,6 +156,11 @@ public class SwerveModule {
     public void runPID(double reference)
     {
       pidController.setReference(reference, ControlType.kPosition);
+    }
+
+    public double getAbsEncoderVoltage()
+    {
+      return absAngleEncoder.getVoltage();
     }
      
     // public void move(double speed, double angle) {
