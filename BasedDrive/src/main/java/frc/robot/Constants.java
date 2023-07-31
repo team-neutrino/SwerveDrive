@@ -33,7 +33,7 @@ public class Constants {
        //PID constants
        //Note that robot casserole's units are way different than ours so the commented values are likely VERY arbitrary
        public static double SPEED_P = 0.0; //robot casserole uses 0.08
-       public static double ANGLE_P = 0.0004; //robot casserole uses 0.015. 
+       public static double ANGLE_P = 0.0004; //robot casserole uses 0.015
        public static double I;
        public static double D;
 
@@ -59,5 +59,6 @@ public class Constants {
     {
         //if I'm not mistaken, 4.064 inches
         public static double WHEEL_DIAMETER_M = 0.1032256;
+        public static double WHEEL_RADIUS_M = 0.0516128;
     }
 }

@@ -22,9 +22,14 @@ public class SwerveModule {
     private RelativeEncoder angleEncoder;
     private RelativeEncoder speedEncoder;
     private SparkMaxAnalogSensor absAngleEncoder;
-    SparkMaxAbsoluteEncoder absAngleEncoder2;
-    AnalogEncoder absAngleEncoder3;
-    private SparkMaxPIDController pidController;
+    private SparkMaxPIDController anglePIDController;
+    private SparkMaxPIDController speedPIDController;
+
+    //PID gain interpolation points
+    double x0 = 15;
+    double y0 = 0.0003;
+    double x1 = 180;
+    double y1 = 0.0005;
 
     public SwerveModule(int angleID, int speedID) {
 
@@ -54,16 +59,21 @@ public class SwerveModule {
         //units for its reference and actual input
 
         absAngleEncoder = angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
+        //(0, 360) now instead of (0, 3.3)
         absAngleEncoder.setPositionConversionFactor(360 / 3.3);
-        absAngleEncoder2 = angleMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+        speedEncoder.setVelocityConversionFactor(60);
 
-        pidController = angleMotor.getPIDController();
-        pidController.setFeedbackDevice(absAngleEncoder);
-        pidController.setP(Constants.Swerve.ANGLE_P);
-        pidController.setD(0.00001);
-        pidController.setPositionPIDWrappingEnabled(true);
-        pidController.setPositionPIDWrappingMaxInput(360);
-        pidController.setPositionPIDWrappingMinInput(0);
+        anglePIDController = angleMotor.getPIDController();
+        anglePIDController.setFeedbackDevice(absAngleEncoder);
+        anglePIDController.setP(Constants.Swerve.ANGLE_P);
+        anglePIDController.setPositionPIDWrappingEnabled(true);
+        anglePIDController.setPositionPIDWrappingMaxInput(360);
+        anglePIDController.setPositionPIDWrappingMinInput(0);
+
+        speedPIDController = speedMotor.getPIDController();
+        speedPIDController.setFeedbackDevice(speedEncoder);
+        speedPIDController.setP(Constants.Swerve.SPEED_P);
+
 
         //needed for finding position offset?
         //angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
@@ -74,7 +84,6 @@ public class SwerveModule {
 
         //rpm to rps
         angleEncoder.setVelocityConversionFactor(60); //needed?
-        speedEncoder.setVelocityConversionFactor(60);
 
         //assuming we can get abs encoders to work
         //this should make it so we can use relative encoders after the correct position has been initialized
@@ -97,24 +106,6 @@ public class SwerveModule {
       return absAngleEncoder.getPosition();
     }
 
-    public double getAbsolutePositionAdjusted()
-    {
-      return Limiter.scale(absAngleEncoder.getPosition(), -180, 180);
-    }
-
-    public double getDegrees()
-    //in degrees
-    {
-        return (angleEncoder.getPosition() * 360) % 360;
-    }
-
-    public double getAdjustedDegrees()
-    {
-      //accounting for gear ratio? Now they should both be in degrees but are 1:1 for optimization (among other things)
-      //range is (-360, 360)
-      return (angleEncoder.getPosition() * 360 / 6.55) % 360; 
-    }
-
     public double getVelocityRPS()
     {
       //default returns RPM, conversion is 60 so it should be returning
@@ -125,7 +116,7 @@ public class SwerveModule {
     public double getVelocityMPS()
     {
       //returns the wheel speeds in m/s instead of r/s
-      return speedEncoder.getVelocity() * Constants.DimensionConstants.WHEEL_DIAMETER_M;
+      return speedEncoder.getVelocity() * Constants.DimensionConstants.WHEEL_RADIUS_M;
     }
 
     // public void setAngle(double speed)
@@ -153,9 +144,29 @@ public class SwerveModule {
       angleMotor.set(in);
     }
 
-    public void runPID(double reference)
+    public void runAnglePID(double reference)
     {
-      pidController.setReference(reference, ControlType.kPosition);
+      scheduleAnglePIDGains(reference, getAbsolutePosition());
+      anglePIDController.setReference(reference, ControlType.kPosition);
+    }
+
+    public void runSpeedPID(double reference, double feedForward)
+    {
+      //what is the pidSlot???
+      speedPIDController.setReference(reference, CANSparkMax.ControlType.kVelocity, 0, feedForward, SparkMaxPIDController.ArbFFUnits.kVoltage);
+    }
+
+    public void scheduleAnglePIDGains(double reference, double currentPos)
+    {
+      double error = Math.abs(reference - currentPos);
+      // double p = (y0 * (x1 - error) + y1 * (error - x0)) / (x1 - x0);
+      // anglePIDController.setP(p);
+      
+      //I'm curious to see if this will work first, it is binary control though... (might need to be changed to 2 or 3)
+      if (error < 1)
+      {
+        anglePIDController.setP(0);
+      }
     }
 
     public double getAbsEncoderVoltage()

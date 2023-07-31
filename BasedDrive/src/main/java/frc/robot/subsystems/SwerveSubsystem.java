@@ -149,17 +149,17 @@ public class SwerveSubsystem extends SubsystemBase {
             m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
 
         //PID on module angle position
-        double frontLeftAngleOutput = m_PIDAngle.calculate(
-            m_frontLeft.getAbsolutePosition() * 360, frontLeftState.angle.getDegrees());
+        // double frontLeftAngleOutput = m_PIDAngle.calculate(
+        //     m_frontLeft.getAbsolutePosition() * 360, frontLeftState.angle.getDegrees());
 
-        double frontRightAngleOutput = m_PIDAngle.calculate(
-            m_frontRight.getAbsolutePosition() * 360, frontRightState.angle.getDegrees());
+        // double frontRightAngleOutput = m_PIDAngle.calculate(
+        //     m_frontRight.getAbsolutePosition() * 360, frontRightState.angle.getDegrees());
 
-        double backLeftAngleOutput = m_PIDAngle.calculate(
-            m_backLeft.getAbsolutePosition() * 360, backLeftState.angle.getDegrees());
+        // double backLeftAngleOutput = m_PIDAngle.calculate(
+        //     m_backLeft.getAbsolutePosition() * 360, backLeftState.angle.getDegrees());
 
-        double backRightAngleOutput = m_PIDAngle.calculate(
-            m_backRight.getAbsolutePosition() * 360, backRightState.angle.getDegrees());
+        // double backRightAngleOutput = m_PIDAngle.calculate(
+        //     m_backRight.getAbsolutePosition() * 360, backRightState.angle.getDegrees());
 
         //set wheel speeds
         // m_frontLeft.setWheelSpeedVolts(frontLeftWheelOutput);
@@ -181,10 +181,15 @@ public class SwerveSubsystem extends SubsystemBase {
             }
         }
 
-        m_frontLeft.runPID(frontLeftState.angle.getDegrees());
-        m_frontRight.runPID(frontRightState.angle.getDegrees());
-        m_backLeft.runPID(backLeftState.angle.getDegrees());
-        m_backRight.runPID(backRightState.angle.getDegrees());
+        m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
+        m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
+        m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
+        m_backRight.runAnglePID(backRightState.angle.getDegrees());
+
+        m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
+        m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
+        m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
+        m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
 
         
         if (cycle % 40 == 0)
@@ -254,10 +259,12 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
             // System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
 
-            // SwerveModuleState frontRight = new SwerveModuleState(m_frontRight.getVelocityMPS(), Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
-            // SwerveModuleState frontLeft = new SwerveModuleState(m_frontLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
-            // SwerveModuleState backRight = new SwerveModuleState(m_backRight.getVelocityMPS(), Rotation2d.fromDegrees(m_backRight.getAdjustedDegrees()));
-            // SwerveModuleState backLeft = new SwerveModuleState(m_backLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_backLeft.getAdjustedDegrees()));
+            //none of the below forward kinematics will work until the proper conversion for position is done. It's not hard,
+            //but does require some if statements and saving off values and I'm too lazy to type it all out now since it might not ever be used
+            // SwerveModuleState frontRight = new SwerveModuleState(m_frontRight.getVelocityMPS(), Rotation2d.fromDegrees(m_frontRight.getAbsolutePosition()));
+            // SwerveModuleState frontLeft = new SwerveModuleState(m_frontLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_frontLeft.getAbsolutePosition()));
+            // SwerveModuleState backRight = new SwerveModuleState(m_backRight.getVelocityMPS(), Rotation2d.fromDegrees(m_backRight.getAbsolutePosition()));
+            // SwerveModuleState backLeft = new SwerveModuleState(m_backLeft.getVelocityMPS(), Rotation2d.fromDegrees(m_backLeft.getAbsolutePosition()));
 
             // ChassisSpeeds forwardKinematics = m_kinematics.toChassisSpeeds(frontRight, frontLeft, backRight, backLeft);
 
