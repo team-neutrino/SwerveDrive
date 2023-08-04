@@ -26,10 +26,11 @@ public class SwerveModule {
     private SparkMaxPIDController speedPIDController;
 
     //PID gain interpolation points
-    double x0 = 15;
-    double y0 = 0.0003;
-    double x1 = 180;
-    double y1 = 0.0005;
+    double[][] points = {{0, 15, 180}, {0.0001, 0.0003, 0.0005}};
+    // double x0 = 15;
+    // double y0 = 0.0003;
+    // double x1 = 180;
+    // double y1 = 0.0005;
 
     public SwerveModule(int angleID, int speedID) {
 
@@ -158,15 +159,19 @@ public class SwerveModule {
 
     public void scheduleAnglePIDGains(double reference, double currentPos)
     {
+      double p;
       double error = Math.abs(reference - currentPos);
-      // double p = (y0 * (x1 - error) + y1 * (error - x0)) / (x1 - x0);
-      // anglePIDController.setP(p);
-      
-      //I'm curious to see if this will work first, it is binary control though... (might need to be changed to 2 or 3)
-      if (error < 1)
+      if (error <= 15)
       {
-        anglePIDController.setP(0);
+        // (y0 * (x1 - error) + y1 * (error - x0)) / (x1 - x0)
+        p = (points[1][0] * (points[0][1] - error) + points[1][1] * (error - points[0][0])) / (points[0][1] - points[0][0]);
       }
+      else 
+      {
+        p = (points[1][1] * (points[0][2] - error) + points[1][2] * (error - points[0][1])) / (points[0][2] - points[0][1]);
+      }
+      anglePIDController.setP(p);
+      
     }
 
     public double getAbsEncoderVoltage()
