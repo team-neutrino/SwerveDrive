@@ -26,7 +26,7 @@ public class SwerveModule {
     private SparkMaxPIDController speedPIDController;
 
     //PID gain interpolation points
-    double[][] points = {{0, 15, 180}, {0.0001, 0.0003, 0.0005}};
+    double[][] points = {{0, 5, 180}, {0.0001, 0.0002, 0.0005}};
     // double x0 = 15;
     // double y0 = 0.0003;
     // double x1 = 180;
@@ -147,7 +147,7 @@ public class SwerveModule {
 
     public void runAnglePID(double reference)
     {
-      scheduleAnglePIDGains(reference, getAbsolutePosition());
+      //scheduleAnglePIDGains(reference, getAbsolutePosition());
       anglePIDController.setReference(reference, ControlType.kPosition);
     }
 
@@ -161,14 +161,16 @@ public class SwerveModule {
     {
       double p;
       double error = Math.abs(reference - currentPos);
-      if (error <= 15)
+      if (error >= 5)
       {
         // (y0 * (x1 - error) + y1 * (error - x0)) / (x1 - x0)
-        p = (points[1][0] * (points[0][1] - error) + points[1][1] * (error - points[0][0])) / (points[0][1] - points[0][0]);
+        //p = (points[1][0] * (points[0][1] - error) + points[1][1] * (error - points[0][0])) / (points[0][1] - points[0][0]);
+        //p = (points[1][1] * (points[0][2] - error) + points[1][2] * (error - points[0][1])) / (points[0][2] - points[0][1]);
+        p = 0.0005;
       }
       else 
       {
-        p = (points[1][1] * (points[0][2] - error) + points[1][2] * (error - points[0][1])) / (points[0][2] - points[0][1]);
+        p = 0;
       }
       anglePIDController.setP(p);
       

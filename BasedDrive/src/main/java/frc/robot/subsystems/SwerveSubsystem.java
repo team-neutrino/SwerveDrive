@@ -172,30 +172,50 @@ public class SwerveSubsystem extends SubsystemBase {
         // m_frontRight.setAngleSpeedVolts(frontRightAngleOutput * 12.0);
         // m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
         // m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
+        if (cycle % 40 == 0)
+        {
+            // System.out.println("back right reference " + backRightState.angle.getDegrees());  
+            // System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition()); 
+            System.out.println("reference " + backRightState.angle.getDegrees());
+        }
 
         for (int i = 0; i < 4; i++)
         {
             if (moduleStates[i].angle.getDegrees() < 0)
             {
-                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() + 180);
+                //System.out.println("reference " + backRightState.angle.getDegrees());
+                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() + 360);
+                //System.out.println("reference " + moduleStates[i].angle.getDegrees() * -1);
+            }
+            else if (moduleStates[i].angle.getDegrees() > 0)
+            {
+                //System.out.println("reference " + backRightState.angle.getDegrees());
+                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() );
+                //System.out.println("reference " + moduleStates[i].angle.getDegrees());
             }
         }
 
-        m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
-        m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
-        m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
-        m_backRight.runAnglePID(backRightState.angle.getDegrees());
-
-        m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
-        m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
-        m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
-        m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
-
-        
         if (cycle % 40 == 0)
         {
-            
+            // System.out.println("back right reference " + backRightState.angle.getDegrees());  
+            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition()); 
+            System.out.println("reference " + backRightState.angle.getDegrees());
         }
+
+        // m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
+        // m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
+        // m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
+        backRightState.angle = Rotation2d.fromDegrees(270);
+        //m_backRight.runAnglePID(backRightState.angle.getDegrees());
+        m_backRight.runAnglePID(backRightState.angle.getDegrees());
+
+        // m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
+        // m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
+        // m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
+        // m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
+
+        
+        
         // if (Math.signum(backRightState.angle.getDegrees()) == -1)
         // {
         //     m_backRight.runPID(backRightState.angle.getDegrees() + 180);
@@ -281,7 +301,6 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("Back right position offset " + m_backRight.getPositionOffset());
             // System.out.println("Back left position offset " + m_backRight.getPositionOffset
 
-            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
         }
     }
 

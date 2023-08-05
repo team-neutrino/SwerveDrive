@@ -33,7 +33,7 @@ public class Constants {
        //PID constants
        //Note that robot casserole's units are way different than ours so the commented values are likely VERY arbitrary
        public static double SPEED_P = 0.0; //robot casserole uses 0.08
-       public static double ANGLE_P = 0.0004; //robot casserole uses 0.015
+       public static double ANGLE_P = 0.0007; //robot casserole uses 0.015
        public static double I;
        public static double D;
 
@@ -50,9 +50,9 @@ public class Constants {
 
     public static class OperatorConstants
     {
-        public static int LEFT_JOYSTICK = 2;
+        public static int LEFT_JOYSTICK = 0;
         public static int RIGHT_JOYSTICK = 1;
-        public static int XBOX_CONTROLLER = 0;
+        public static int XBOX_CONTROLLER = 2;
     }
 
     public static class DimensionConstants
