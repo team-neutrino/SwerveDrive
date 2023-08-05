@@ -66,7 +66,10 @@ public class SwerveModule {
 
         anglePIDController = angleMotor.getPIDController();
         anglePIDController.setFeedbackDevice(absAngleEncoder);
-        anglePIDController.setP(Constants.Swerve.ANGLE_P);
+        anglePIDController.setP(Constants.Swerve.ANGLE_P, 0);
+        anglePIDController.setP(0.0004, 1);
+        anglePIDController.setP(0.0004, 2);
+        anglePIDController.setP(0, 3);
         anglePIDController.setPositionPIDWrappingEnabled(true);
         anglePIDController.setPositionPIDWrappingMaxInput(360);
         anglePIDController.setPositionPIDWrappingMinInput(0);
@@ -148,7 +151,7 @@ public class SwerveModule {
     public void runAnglePID(double reference)
     {
       //scheduleAnglePIDGains(reference, getAbsolutePosition());
-      anglePIDController.setReference(reference, ControlType.kPosition);
+      anglePIDController.setReference(reference, ControlType.kPosition, 0);
     }
 
     public void runSpeedPID(double reference, double feedForward)
@@ -157,23 +160,26 @@ public class SwerveModule {
       speedPIDController.setReference(reference, CANSparkMax.ControlType.kVelocity, 0, feedForward, SparkMaxPIDController.ArbFFUnits.kVoltage);
     }
 
-    public void scheduleAnglePIDGains(double reference, double currentPos)
+    public int scheduleAnglePIDGains(double reference, double currentPos)
     {
-      double p;
       double error = Math.abs(reference - currentPos);
-      if (error >= 5)
+
+      if (error <= 5)
       {
-        // (y0 * (x1 - error) + y1 * (error - x0)) / (x1 - x0)
-        //p = (points[1][0] * (points[0][1] - error) + points[1][1] * (error - points[0][0])) / (points[0][1] - points[0][0]);
-        //p = (points[1][1] * (points[0][2] - error) + points[1][2] * (error - points[0][1])) / (points[0][2] - points[0][1]);
-        p = 0.0005;
+        return 3;
+      }
+      else if (error <= 30)
+      {
+        return 2;
+      }
+      else if (error <= 90)
+      {
+        return 1;
       }
       else 
       {
-        p = 0;
+        return 0;
       }
-      anglePIDController.setP(p);
-      
     }
 
     public double getAbsEncoderVoltage()

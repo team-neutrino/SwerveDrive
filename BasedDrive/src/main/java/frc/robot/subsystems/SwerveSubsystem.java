@@ -103,6 +103,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
         SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
 
+        for (int i = 0; i < 4; i++)
+        {
+            if (moduleStates[i].angle.getDegrees() < 0)
+            {
+                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() + 360);
+            }
+        }
+
         //I don't know if the line below will need to be used. After testing once it becomes clear how the chassis speeds transformation
         //effects module speeds we can remove it or put in place a reasonable constant. Knowing the maximum wheel speed is necessary
         //for accurate normalization however and thus hopefully useful PID (we'll see how far we can get...)
@@ -172,54 +180,24 @@ public class SwerveSubsystem extends SubsystemBase {
         // m_frontRight.setAngleSpeedVolts(frontRightAngleOutput * 12.0);
         // m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
         // m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
-        if (cycle % 40 == 0)
-        {
-            // System.out.println("back right reference " + backRightState.angle.getDegrees());  
-            // System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition()); 
-            System.out.println("reference " + backRightState.angle.getDegrees());
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (moduleStates[i].angle.getDegrees() < 0)
-            {
-                //System.out.println("reference " + backRightState.angle.getDegrees());
-                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() + 360);
-                //System.out.println("reference " + moduleStates[i].angle.getDegrees() * -1);
-            }
-            else if (moduleStates[i].angle.getDegrees() > 0)
-            {
-                //System.out.println("reference " + backRightState.angle.getDegrees());
-                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() );
-                //System.out.println("reference " + moduleStates[i].angle.getDegrees());
-            }
-        }
 
         if (cycle % 40 == 0)
         {
             // System.out.println("back right reference " + backRightState.angle.getDegrees());  
-            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition()); 
-            System.out.println("reference " + backRightState.angle.getDegrees());
+            System.out.println("reference " + 90);
         }
+
+        m_backRight.runAnglePID(90);
 
         // m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
         // m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
         // m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
-        backRightState.angle = Rotation2d.fromDegrees(270);
-        //m_backRight.runAnglePID(backRightState.angle.getDegrees());
-        m_backRight.runAnglePID(backRightState.angle.getDegrees());
+        // m_backRight.runAnglePID(backRightState.angle.getDegrees());
 
         // m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
         // m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
         // m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
         // m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
-
-        
-        
-        // if (Math.signum(backRightState.angle.getDegrees()) == -1)
-        // {
-        //     m_backRight.runPID(backRightState.angle.getDegrees() + 180);
-        // }
     }
 
     public double getYaw() {
@@ -293,14 +271,8 @@ public class SwerveSubsystem extends SubsystemBase {
             //Absolute encoder stuff
             // System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition());
             // System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
-            // System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
+            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
             // System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
-
-            // System.out.println("Front right position offset " + m_frontRight.getPositionOffset());
-            // System.out.println("Front left position offset " + m_frontLeft.getPositionOffset());
-            // System.out.println("Back right position offset " + m_backRight.getPositionOffset());
-            // System.out.println("Back left position offset " + m_backRight.getPositionOffset
-
         }
     }
 
