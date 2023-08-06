@@ -250,7 +250,7 @@ public class SwerveSubsystem extends SubsystemBase {
         
 
         cycle++;
-        if (cycle % 40 == 0)
+        if (cycle % 20 == 0)
         {
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
