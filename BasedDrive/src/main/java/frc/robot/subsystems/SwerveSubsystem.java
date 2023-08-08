@@ -42,6 +42,20 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightModule, m_frontLeftModule, m_backRightModule, m_backLeftModule);
 
+    SwerveModuleState[] moduleStates;
+
+    SwerveModuleState frontLeftState;
+    SwerveModuleState frontRightState;
+    SwerveModuleState backLeftState;
+    SwerveModuleState backRightState;
+
+    SwerveModuleState[] moduleStatesPast = {new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState()};
+
+    SwerveModuleState frontLeftStatePast;
+    SwerveModuleState frontRightStatePast;
+    SwerveModuleState backLeftStatePast;
+    SwerveModuleState backRightStatePast;
+
     //SIMULATION
     Pose2d newPose = new Pose2d(3, 3, Rotation2d.fromDegrees(0));
     SwerveModulePosition[] swervePositions = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
@@ -101,35 +115,66 @@ public class SwerveSubsystem extends SubsystemBase {
 
         ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
-        SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
+        moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
+
+        //optimization: module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
+        //reduce correction amount
+
+        // moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(getYaw()));
+        // moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(getYaw()));
+        // moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(getYaw()));
+        // moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(getYaw()));
 
         for (int i = 0; i < 4; i++)
         {
-            if (moduleStates[i].angle.getDegrees() < 0)
+            if (moduleStates[i].angle.getDegrees() <= 0)
             {
-                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() + 360);
+                moduleStates[i].angle = Rotation2d.fromDegrees(moduleStates[i].angle.getDegrees() * -1);
+            }
+            else 
+            {
+                moduleStates[i].angle = Rotation2d.fromDegrees(360 - moduleStates[i].angle.getDegrees());
             }
         }
+
+        if (vx != 0 || vy != 0 || omega != 0)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                moduleStatesPast[i] = moduleStates[i];
+            }
+        }  
+
+        if (vx == 0 && vy == 0 && omega == 0)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    moduleStates[i] = moduleStatesPast[i];
+                }
+            }
 
         //I don't know if the line below will need to be used. After testing once it becomes clear how the chassis speeds transformation
         //effects module speeds we can remove it or put in place a reasonable constant. Knowing the maximum wheel speed is necessary
         //for accurate normalization however and thus hopefully useful PID (we'll see how far we can get...)
         //SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, 1);
         
-        SwerveModuleState frontLeftState = moduleStates[0];
-        SwerveModuleState frontRightState = moduleStates[1];
-        SwerveModuleState backLeftState = moduleStates[2];
-        SwerveModuleState backRightState = moduleStates[3];
+        frontLeftState = moduleStates[0];
+        frontRightState = moduleStates[1];
+        backLeftState = moduleStates[2];
+        backRightState = moduleStates[3];
 
-        //optimization: module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
-        //reduce correction amount
-
-        //optimization needs to be fixed as far as the current angle goes. Edit before uncommenting
-
-        // frontLeftState = SwerveModuleState.optimize(frontLeftState, Rotation2d.fromDegrees(m_frontLeft.getAdjustedDegrees()));
-        // frontRightState = SwerveModuleState.optimize(frontRightState, Rotation2d.fromDegrees(m_frontRight.getAdjustedDegrees()));
-        // backLeftState = SwerveModuleState.optimize(backLeftState, Rotation2d.fromDegrees(m_backLeft.getAdjustedDegrees()));
-        // backRightState = SwerveModuleState.optimize(backRightState, Rotation2d.fromDegrees(m_backRight.getAdjustedDegrees()));
+        if (vx != 0 || vy != 0 || omega != 0)
+        {
+            if (frontRightState.angle.getDegrees() < 21.3)
+            {
+                frontRightState.angle = Rotation2d.fromDegrees(frontRightState.angle.getDegrees() + 360 - 21.3);
+            }
+            else 
+            {
+            frontRightState.angle = Rotation2d.fromDegrees(frontRightState.angle.getDegrees() - 21.3);
+            }
+        }
+        System.out.println("front right state angle " + frontRightState.angle.getDegrees());
 
         //should the PID calculation use getAdjustedDegrees()? This would make it 1:1 with what's being retrieved from the module states...
         //units are already the same but how many degrees is part of a real rotation is technically different for the motor and module at large
@@ -181,23 +226,29 @@ public class SwerveSubsystem extends SubsystemBase {
         // m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
         // m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
 
-        if (cycle % 40 == 0)
+        if (cycle % 8 == 0)
         {
-            // System.out.println("back right reference " + backRightState.angle.getDegrees());  
-            System.out.println("reference " + 90);
+            //System.out.println("back right reference " + backRightState.angle.getDegrees());  
+            // System.out.println("vx " + vx);
+            // System.out.println("vy " + vy);
+            //System.out.println("reference " + 90);
         }
 
-        m_backRight.runAnglePID(90);
+        //System.out.println("back right reference " + backRightState.angle.getDegrees()); 
+        // System.out.println("vx " + vx);
+        // System.out.println("vy " + vy); 
+
+        //m_backRight.runAnglePID(90);
 
         // m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
-        // m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
+        //m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
         // m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
-        // m_backRight.runAnglePID(backRightState.angle.getDegrees());
+        //m_backRight.runAnglePID(backRightState.angle.getDegrees());
 
         // m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
         // m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
         // m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
-        // m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
+        //m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
     public double getYaw() {
@@ -250,7 +301,7 @@ public class SwerveSubsystem extends SubsystemBase {
         
 
         cycle++;
-        if (cycle % 20 == 0)
+        if (cycle % 10 == 0)
         {
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
@@ -269,10 +320,13 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("Current chassis x direction velocity: " + forwardKinematics.vxMetersPerSecond);
 
             //Absolute encoder stuff
-            // System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition());
-            // System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
-            System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
-            // System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
+            //System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition()); // 338.7 degrees = 0
+            //System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
+            System.out.println("front left encoder voltage " + m_frontLeft.getAbsEncoderVoltage());
+            //System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
+            //System.out.println("back right encoder voltage " + m_backRight.getAbsEncoderVoltage());
+            //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
+            // System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
         }
     }
 

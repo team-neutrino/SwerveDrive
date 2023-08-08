@@ -60,6 +60,7 @@ public class SwerveModule {
         //units for its reference and actual input
 
         absAngleEncoder = angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
+        absAngleEncoder.setInverted(true);
         //(0, 360) now instead of (0, 3.3)
         absAngleEncoder.setPositionConversionFactor(360 / 3.3);
         speedEncoder.setVelocityConversionFactor(60);
