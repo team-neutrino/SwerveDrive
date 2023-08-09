@@ -5,12 +5,12 @@ public class Constants {
     public static class Swerve {
        public static int FLA = 8;
        public static int FRA = 6;
-       public static int BLA = 2; 
+       public static int BLA = 1; 
        public static int BRA = 4;
 
        public static int FLS = 7;
        public static int FRS = 5;
-       public static int BLS = 1;
+       public static int BLS = 2;
        public static int BRS = 3;
 
 

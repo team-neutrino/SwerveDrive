@@ -321,12 +321,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
             //Absolute encoder stuff
             //System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition()); // 338.7 degrees = 0
+            //System.out.println("front right encoder voltage " + m_frontRight.getAbsEncoderVoltage());
             //System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
-            System.out.println("front left encoder voltage " + m_frontLeft.getAbsEncoderVoltage());
+            //System.out.println("front left encoder voltage " + m_frontLeft.getAbsEncoderVoltage());
             //System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
             //System.out.println("back right encoder voltage " + m_backRight.getAbsEncoderVoltage());
             //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
-            // System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
+            System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
         }
     }
 
