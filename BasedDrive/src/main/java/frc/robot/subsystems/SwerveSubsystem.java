@@ -120,10 +120,10 @@ public class SwerveSubsystem extends SubsystemBase {
         //optimization: module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
         //reduce correction amount
 
-        // moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(getYaw()));
-        // moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(getYaw()));
-        // moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(getYaw()));
-        // moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(getYaw()));
+        moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
+        moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
+        moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
+        moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
 
         for (int i = 0; i < 4; i++)
         {
@@ -174,7 +174,7 @@ public class SwerveSubsystem extends SubsystemBase {
             frontRightState.angle = Rotation2d.fromDegrees(frontRightState.angle.getDegrees() - 21.3);
             }
         }
-        System.out.println("front right state angle " + frontRightState.angle.getDegrees());
+        //System.out.println("front right state angle " + frontRightState.angle.getDegrees());
 
         //should the PID calculation use getAdjustedDegrees()? This would make it 1:1 with what's being retrieved from the module states...
         //units are already the same but how many degrees is part of a real rotation is technically different for the motor and module at large

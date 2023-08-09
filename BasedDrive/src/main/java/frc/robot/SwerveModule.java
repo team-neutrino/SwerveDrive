@@ -111,6 +111,19 @@ public class SwerveModule {
       return absAngleEncoder.getPosition();
     }
 
+    public double getAdjustedAbsolutePosition()
+    {
+      double pos = absAngleEncoder.getPosition();
+      if (pos <= 180)
+      {
+        return pos * -1;
+      }
+      else 
+      {
+        return 360 - pos;
+      }
+    }
+
     public double getVelocityRPS()
     {
       //default returns RPM, conversion is 60 so it should be returning
