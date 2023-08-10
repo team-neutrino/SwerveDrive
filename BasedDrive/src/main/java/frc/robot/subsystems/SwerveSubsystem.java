@@ -120,10 +120,10 @@ public class SwerveSubsystem extends SubsystemBase {
         //optimization: module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
         //reduce correction amount
 
-        moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
-        moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
-        moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
-        moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
+        // moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
+        // moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
+        // moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
+        // moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
 
         for (int i = 0; i < 4; i++)
         {
@@ -174,6 +174,31 @@ public class SwerveSubsystem extends SubsystemBase {
             frontRightState.angle = Rotation2d.fromDegrees(frontRightState.angle.getDegrees() - 21.3);
             }
         }
+
+        if (vx != 0 || vy != 0 || omega != 0)
+        {
+            if (frontRightState.angle.getDegrees() < 319.2)
+            {
+                frontLeftState.angle = Rotation2d.fromDegrees(frontLeftState.angle.getDegrees() + 40.8);
+            }
+            else 
+            {
+                frontLeftState.angle = Rotation2d.fromDegrees(frontLeftState.angle.getDegrees() + 40.8 - 360);
+            }
+        }
+
+        if (vx != 0 || vy != 0 || omega != 0)
+        {
+            if (backLeftState.angle.getDegrees() < 277.3)
+            {
+                backLeftState.angle = Rotation2d.fromDegrees(backLeftState.angle.getDegrees() + 82.7);
+            }
+            else 
+            {
+                backLeftState.angle = Rotation2d.fromDegrees(backLeftState.angle.getDegrees() + 82.7 - 360);
+            }
+        }
+
         //System.out.println("front right state angle " + frontRightState.angle.getDegrees());
 
         //should the PID calculation use getAdjustedDegrees()? This would make it 1:1 with what's being retrieved from the module states...
@@ -240,10 +265,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
         //m_backRight.runAnglePID(90);
 
-        // m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
-        //m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
-        // m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
-        //m_backRight.runAnglePID(backRightState.angle.getDegrees());
+        m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
+        m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
+        m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
+        m_backRight.runAnglePID(backRightState.angle.getDegrees());
 
         // m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
         // m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
@@ -322,12 +347,12 @@ public class SwerveSubsystem extends SubsystemBase {
             //Absolute encoder stuff
             //System.out.println("Front right encoder position " + m_frontRight.getAbsolutePosition()); // 338.7 degrees = 0
             //System.out.println("front right encoder voltage " + m_frontRight.getAbsEncoderVoltage());
-            //System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition());
+            //System.out.println("Front left encoder position " + m_frontLeft.getAbsolutePosition()); // 40.8
             //System.out.println("front left encoder voltage " + m_frontLeft.getAbsEncoderVoltage());
             //System.out.println("Back right encoder position " + m_backRight.getAbsolutePosition());
             //System.out.println("back right encoder voltage " + m_backRight.getAbsEncoderVoltage());
-            //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition());
-            System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
+            //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition()); // 82.7
+            //System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
         }
     }
 
