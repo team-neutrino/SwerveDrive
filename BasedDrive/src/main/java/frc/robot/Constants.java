@@ -31,9 +31,8 @@ public class Constants {
        public static double MAX_MODULE_ROTATION_SPEED;
 
        //PID constants
-       //Note that robot casserole's units are way different than ours so the commented values are likely VERY arbitrary
-       public static double SPEED_P = 0.0; //robot casserole uses 0.08
-       public static double ANGLE_P = 0.01; //robot casserole uses 0.015
+       public static double SPEED_P = 0.0; 
+       public static double ANGLE_P = 0.01;
        public static double I;
        public static double D;
 
@@ -45,7 +44,7 @@ public class Constants {
        //Gear ratio
        //This ratio can vary widely (5.5:1 - 7.8:1) according to the docs. I know we went with belt, but the exact ratio
        //is still unknown to me. I'm hoping this is correct but we'll have to check with design
-       public static double MODULE_ANGLE_GEAR_RATIO = 1/6.55;
+       public static double MODULE_ANGLE_GEAR_RATIO = 6.55 / 1;
     }
 
     public static class OperatorConstants
@@ -59,6 +58,7 @@ public class Constants {
     {
         //if I'm not mistaken, 4.064 inches
         public static double WHEEL_DIAMETER_M = 0.1032256;
+        public static double WHEEL_CIRCUMFERENCE_M = Math.PI * WHEEL_DIAMETER_M;
         public static double WHEEL_RADIUS_M = 0.0516128;
     }
 }

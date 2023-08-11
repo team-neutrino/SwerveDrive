@@ -4,6 +4,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.util.Limiter;
@@ -24,13 +25,7 @@ public class SwerveModule {
     private SparkMaxAnalogSensor absAngleEncoder;
     private SparkMaxPIDController anglePIDController;
     private SparkMaxPIDController speedPIDController;
-
-    //PID gain interpolation points
-    double[][] points = {{0, 5, 180}, {0.0001, 0.0002, 0.0005}};
-    // double x0 = 15;
-    // double y0 = 0.0003;
-    // double x1 = 180;
-    // double y1 = 0.0005;
+    private int angleID;
 
     public SwerveModule(int angleID, int speedID) {
 
@@ -43,6 +38,8 @@ public class SwerveModule {
          * data is accessible from the specifc encoder in question. This may change later but the way it is formatted as of now
          * is certainly intentional, and shouldn't be overlooked if one is intending to further this code. 
          */
+
+        this.angleID = angleID;
            
         angleMotor = new CANSparkMax(angleID, MotorType.kBrushless);
         speedMotor = new CANSparkMax(speedID, MotorType.kBrushless);
@@ -68,16 +65,13 @@ public class SwerveModule {
         anglePIDController = angleMotor.getPIDController();
         anglePIDController.setFeedbackDevice(absAngleEncoder);
         anglePIDController.setP(Constants.Swerve.ANGLE_P, 0);
-        anglePIDController.setP(0.0004, 1);
-        anglePIDController.setP(0.0004, 2);
-        anglePIDController.setP(0, 3);
         anglePIDController.setPositionPIDWrappingEnabled(true);
         anglePIDController.setPositionPIDWrappingMaxInput(360);
         anglePIDController.setPositionPIDWrappingMinInput(0);
 
         speedPIDController = speedMotor.getPIDController();
         speedPIDController.setFeedbackDevice(speedEncoder);
-        speedPIDController.setP(Constants.Swerve.SPEED_P);
+        speedPIDController.setP(Constants.Swerve.SPEED_P, 0);
 
 
         //needed for finding position offset?
@@ -108,12 +102,12 @@ public class SwerveModule {
 
     public double getAbsolutePosition()
     {
-      return absAngleEncoder.getPosition();
+      return adjustAngleOut(absAngleEncoder.getPosition());
     }
 
     public double getAdjustedAbsolutePosition()
     {
-      double pos = absAngleEncoder.getPosition();
+      double pos = getAbsolutePosition();
       if (pos <= 180)
       {
         return pos * -1;
@@ -122,6 +116,104 @@ public class SwerveModule {
       {
         return 360 - pos;
       }
+    }
+
+    /**
+     * Helper method that takes in the desired angle (most likely a reference position) for use with the angle motor and encoder and applies the correct
+     * position adjustments as necessary to account for known offset. 
+     * @param angle The input angle to be used by the angle hardware
+     * @return Adjusted angle that has been modified for known offset
+     */
+    public double adjustAngleIn(double angle)
+    {
+      if (angleID == 2)
+      {
+        if (angle < 277.3)
+            {
+                angle += 82.7;
+            }
+            else 
+            {
+                angle = angle + 82.7 - 360;
+            }
+      }
+
+      //The back right module (angleID = 4) has no need of offset. Nice.
+
+      else if (angleID == 6)
+      {
+        if (angle < 21.3)
+            {
+                angle = angle + 360 - 21.3;
+            }
+            else 
+            {
+                angle -= 21.3;
+            }
+      }
+
+      else if (angleID == 8)
+      {
+        if (angle < 319.2)
+            {
+                angle += 40.8;
+            }
+            else 
+            {
+                angle = angle + 40.8 - 360;
+            }
+      }
+
+      return angle;
+    }
+
+    /**
+     * Helper method that takes in the raw position from the absolute analog encoder that is present module and adjusts the retrieved angle as
+     * necessary to account for known offsets.
+     * @param angle The initial position (0, 360) (increasing clockwise) from the absolute encoder that has not been adjusted for offsets
+     * @return Accurate angle that reflects the real module angle after accounting for offsets
+     */
+    public double adjustAngleOut(double angle)
+    {
+      if (angleID == 2)
+      {
+        if (angle < 82.7)
+        {
+          angle = angle - 82.7 + 360;
+        }
+        else 
+        {
+          angle -= 82.7;
+        }
+      }
+
+      //The back right module (angleID = 4) has no need of offset. Nice.
+
+      else if (angleID == 6)
+      {
+        if (angle > 338.7)
+        {
+          angle = angle + 21.3 - 360;
+        }
+        else 
+        {
+          angle += 21.3;
+        }
+      }
+
+      else if (angleID == 8)
+      {
+        if (angle < 40.8)
+        {
+          angle = angle - 40.8 + 360;
+        }
+        else 
+        {
+          angle -= 40.8;
+        }
+      }
+
+      return angle;
     }
 
     public double getVelocityRPS()
@@ -133,8 +225,8 @@ public class SwerveModule {
 
     public double getVelocityMPS()
     {
-      //returns the wheel speeds in m/s instead of r/s
-      return speedEncoder.getVelocity() * Constants.DimensionConstants.WHEEL_RADIUS_M;
+      //returns the wheel speeds in m/s instead of rotations/s
+      return speedEncoder.getVelocity() * Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M;
     }
 
     // public void setAngle(double speed)
@@ -142,58 +234,35 @@ public class SwerveModule {
     //   speedMotor.set(speed);
     // }
 
-    public void setSpeedVelocity(double speed)
-    {
-      speedMotor.set(speed);
-    }
+    // public void setSpeedVelocity(double speed)
+    // {
+    //   speedMotor.set(speed);
+    // }
 
-    public void setWheelSpeedVolts(double volts)
-    {
-      speedMotor.setVoltage(volts);
-    }
+    // public void setWheelSpeedVolts(double volts)
+    // {
+    //   speedMotor.setVoltage(volts);
+    // }
 
-    public void setAngleSpeedVolts(double volts)
-    {
-      angleMotor.setVoltage(volts);
-    }
+    // public void setAngleSpeedVolts(double volts)
+    // {
+    //   angleMotor.setVoltage(volts);
+    // }
 
-    public void setAngleSpeedNormalized(double in)
-    {
-      angleMotor.set(in);
-    }
+    // public void setAngleSpeedNormalized(double in)
+    // {
+    //   angleMotor.set(in);
+    // }
 
     public void runAnglePID(double reference)
     {
-      //scheduleAnglePIDGains(reference, getAbsolutePosition());
+      reference = adjustAngleIn(reference);
       anglePIDController.setReference(reference, ControlType.kPosition, 0);
     }
 
     public void runSpeedPID(double reference, double feedForward)
     {
-      //what is the pidSlot???
       speedPIDController.setReference(reference, CANSparkMax.ControlType.kVelocity, 0, feedForward, SparkMaxPIDController.ArbFFUnits.kVoltage);
-    }
-
-    public int scheduleAnglePIDGains(double reference, double currentPos)
-    {
-      double error = Math.abs(reference - currentPos);
-
-      if (error <= 5)
-      {
-        return 3;
-      }
-      else if (error <= 30)
-      {
-        return 2;
-      }
-      else if (error <= 90)
-      {
-        return 1;
-      }
-      else 
-      {
-        return 0;
-      }
     }
 
     public double getAbsEncoderVoltage()

@@ -163,42 +163,6 @@ public class SwerveSubsystem extends SubsystemBase {
         backLeftState = moduleStates[2];
         backRightState = moduleStates[3];
 
-        if (vx != 0 || vy != 0 || omega != 0)
-        {
-            if (frontRightState.angle.getDegrees() < 21.3)
-            {
-                frontRightState.angle = Rotation2d.fromDegrees(frontRightState.angle.getDegrees() + 360 - 21.3);
-            }
-            else 
-            {
-            frontRightState.angle = Rotation2d.fromDegrees(frontRightState.angle.getDegrees() - 21.3);
-            }
-        }
-
-        if (vx != 0 || vy != 0 || omega != 0)
-        {
-            if (frontRightState.angle.getDegrees() < 319.2)
-            {
-                frontLeftState.angle = Rotation2d.fromDegrees(frontLeftState.angle.getDegrees() + 40.8);
-            }
-            else 
-            {
-                frontLeftState.angle = Rotation2d.fromDegrees(frontLeftState.angle.getDegrees() + 40.8 - 360);
-            }
-        }
-
-        if (vx != 0 || vy != 0 || omega != 0)
-        {
-            if (backLeftState.angle.getDegrees() < 277.3)
-            {
-                backLeftState.angle = Rotation2d.fromDegrees(backLeftState.angle.getDegrees() + 82.7);
-            }
-            else 
-            {
-                backLeftState.angle = Rotation2d.fromDegrees(backLeftState.angle.getDegrees() + 82.7 - 360);
-            }
-        }
-
         //System.out.println("front right state angle " + frontRightState.angle.getDegrees());
 
         //should the PID calculation use getAdjustedDegrees()? This would make it 1:1 with what's being retrieved from the module states...
@@ -214,17 +178,17 @@ public class SwerveSubsystem extends SubsystemBase {
         double backRightFF = m_feedForward.calculate(backRightState.speedMetersPerSecond);
 
         //PID on wheel speeds
-        double frontLeftWheelOutput = frontLeftFF + m_PIDSpeed.calculate(
-            m_frontLeft.getVelocityMPS(), frontLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
+        // double frontLeftWheelOutput = frontLeftFF + m_PIDSpeed.calculate(
+        //     m_frontLeft.getVelocityMPS(), frontLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
     
-        double frontRightWheelOutput = frontRightFF + m_PIDSpeed.calculate(
-            m_frontRight.getVelocityMPS(), frontRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
+        // double frontRightWheelOutput = frontRightFF + m_PIDSpeed.calculate(
+        //     m_frontRight.getVelocityMPS(), frontRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
         
-        double backLeftWheelOutput = backLeftFF + m_PIDSpeed.calculate(
-            m_backLeft.getVelocityMPS(), backLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
+        // double backLeftWheelOutput = backLeftFF + m_PIDSpeed.calculate(
+        //     m_backLeft.getVelocityMPS(), backLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
         
-        double backRightWheelOutput = backRightFF + m_PIDSpeed.calculate(
-            m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
+        // double backRightWheelOutput = backRightFF + m_PIDSpeed.calculate(
+        //     m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
 
         //PID on module angle position
         // double frontLeftAngleOutput = m_PIDAngle.calculate(
