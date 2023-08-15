@@ -1,10 +1,5 @@
 {
   "SysId": {
-    "Analysis Type": "Drivetrain",
-    "NetworkTables Settings": {
-      "serverTeam": "3928"
-    },
-    "mode": "Client (NT4)",
-    "serverTeam": "3928"
+    "Analysis Type": "Drivetrain"
   }
 }
