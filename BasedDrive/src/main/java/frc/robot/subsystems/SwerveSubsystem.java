@@ -218,8 +218,8 @@ public class SwerveSubsystem extends SubsystemBase {
         if (cycle % 8 == 0)
         {
             //System.out.println("back right reference " + backRightState.angle.getDegrees());  
-            // System.out.println("vx " + vx);
-            // System.out.println("vy " + vy);
+            System.out.println("vx " + vx);
+            System.out.println("vy " + vy);
             //System.out.println("reference " + 90);
         }
 
@@ -237,7 +237,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
         // m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
         // m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
-        //m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
+        // m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
     public double getYaw() {
