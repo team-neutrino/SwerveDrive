@@ -49,7 +49,7 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModuleState backLeftState;
     SwerveModuleState backRightState;
 
-    SwerveModuleState[] moduleStatesPast = {new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState()};
+    double[] pastModuleAngles = new double[4];
 
     SwerveModuleState frontLeftStatePast;
     SwerveModuleState frontRightStatePast;
@@ -113,7 +113,9 @@ public class SwerveSubsystem extends SubsystemBase {
         // System.out.println("vx " + vx);
         // System.out.println("vy " + vy);
 
-        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
+        ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
+
+        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw() * -1));
 
         moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
 
@@ -141,7 +143,7 @@ public class SwerveSubsystem extends SubsystemBase {
         {
             for (int i = 0; i < 4; i++)
             {
-                moduleStatesPast[i] = moduleStates[i];
+                pastModuleAngles[i] = moduleStates[i].angle.getDegrees();
             }
         }  
 
@@ -149,7 +151,7 @@ public class SwerveSubsystem extends SubsystemBase {
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    moduleStates[i] = moduleStatesPast[i];
+                    moduleStates[i].angle = Rotation2d.fromDegrees(pastModuleAngles[i]);
                 }
             }
 
@@ -158,10 +160,10 @@ public class SwerveSubsystem extends SubsystemBase {
         //for accurate normalization however and thus hopefully useful PID (we'll see how far we can get...)
         //SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, 1);
         
-        frontLeftState = moduleStates[0];
-        frontRightState = moduleStates[1];
-        backLeftState = moduleStates[2];
-        backRightState = moduleStates[3];
+        frontLeftState = moduleStates[1];
+        frontRightState = moduleStates[0];
+        backLeftState = moduleStates[3];
+        backRightState = moduleStates[2];
 
         //System.out.println("front right state angle " + frontRightState.angle.getDegrees());
 
@@ -218,8 +220,8 @@ public class SwerveSubsystem extends SubsystemBase {
         if (cycle % 8 == 0)
         {
             //System.out.println("back right reference " + backRightState.angle.getDegrees());  
-            System.out.println("vx " + vx);
-            System.out.println("vy " + vy);
+            // System.out.println("vx " + vx);
+            // System.out.println("vy " + vy);
             //System.out.println("reference " + 90);
         }
 
@@ -234,10 +236,10 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
         m_backRight.runAnglePID(backRightState.angle.getDegrees());
 
-        // m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
-        // m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
-        // m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
-        // m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
+        m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
+        m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
+        m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
+        m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
     public double getYaw() {
@@ -290,12 +292,15 @@ public class SwerveSubsystem extends SubsystemBase {
         
 
         cycle++;
-        if (cycle % 10 == 0)
+        if (cycle % 8 == 0)
         {
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
-            // System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
+            System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
+            //System.out.println("counts " + m_backLeft.countsPerRotation());
+
+            //System.out.println("navX angle " + getYaw());
 
             //none of the below forward kinematics will work until the proper conversion for position is done. It's not hard,
             //but does require some if statements and saving off values and I'm too lazy to type it all out now since it might not ever be used

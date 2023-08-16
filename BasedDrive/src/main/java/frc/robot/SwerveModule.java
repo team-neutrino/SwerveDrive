@@ -50,6 +50,11 @@ public class SwerveModule {
         angleMotor.setIdleMode(IdleMode.kBrake);
         speedMotor.setIdleMode(IdleMode.kBrake);
 
+        if (speedID != 5)
+        {
+          speedMotor.setInverted(true);
+        }
+
         angleEncoder = angleMotor.getEncoder();
         speedEncoder = speedMotor.getEncoder();
 
@@ -82,7 +87,7 @@ public class SwerveModule {
         //absAngleEncoder.setZeroOffset(0);
 
         //rpm to rps
-        angleEncoder.setVelocityConversionFactor(60); //needed?
+        speedEncoder.setVelocityConversionFactor(1 / 4096 * 6.55); //needed?
 
         //assuming we can get abs encoders to work
         //this should make it so we can use relative encoders after the correct position has been initialized
@@ -221,6 +226,11 @@ public class SwerveModule {
       //default returns RPM, conversion is 60 so it should be returning
       //rotations per second
       return speedEncoder.getVelocity();
+    }
+
+    public int countsPerRotation()
+    {
+      return speedEncoder.getCountsPerRevolution();
     }
 
     public double getVelocityMPS()

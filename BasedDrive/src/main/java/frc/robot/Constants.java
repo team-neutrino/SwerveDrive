@@ -30,7 +30,7 @@ public class Constants {
 
        //Max velocities in m/s or rad/s (for rotation)
        public static double MAX_CHASSIS_LINEAR_SPEED = 1;
-       public static double MAX_CHASSIS_ROTATIONAL_SPEED = Math.PI / 2;
+       public static double MAX_CHASSIS_ROTATIONAL_SPEED = 1.5 * Math.PI;
        public static double MAX_MODULE_ROTATION_SPEED;
 
        //PID constants
@@ -40,8 +40,8 @@ public class Constants {
        public static double D;
 
        //Feedforward constants
-       public static double Ks = 0.15; //0.1 - 0.15 seems to be a good starting place, possibly lower. Robot casserole uses 0.15
-       public static double Kv = 2.3; //robot casserole uses 0.02, so maybe 0.01?
+       public static double Ks = 0.1256; //0.1 - 0.15 seems to be a good starting place, possibly lower. Robot casserole uses 0.15
+       public static double Kv = 2.6221; //robot casserole uses 0.02, so maybe 0.01?
        //public static double Ka = 0.0; needed?
 
        //Gear ratio
