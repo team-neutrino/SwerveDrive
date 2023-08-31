@@ -1,3 +1,4 @@
+
 package frc.robot.subsystems;
 import frc.robot.Constants;
 import frc.robot.SwerveModule;
@@ -152,6 +153,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 for (int i = 0; i < 4; i++)
                 {
                     moduleStates[i].angle = Rotation2d.fromDegrees(pastModuleAngles[i]);
+                    moduleStates[i].speedMetersPerSecond = 0;
                 }
             }
 
