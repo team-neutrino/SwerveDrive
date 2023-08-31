@@ -122,10 +122,10 @@ public class SwerveSubsystem extends SubsystemBase {
         //optimization: module angle is potentially offset by 180 degrees and the wheel speed is flipped to 
         //reduce correction amount
 
-        // moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
-        // moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
-        // moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
-        // moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
+        moduleStates[1] = SwerveModuleState.optimize(moduleStates[1], Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
+        moduleStates[0] = SwerveModuleState.optimize(moduleStates[0], Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
+        moduleStates[3] = SwerveModuleState.optimize(moduleStates[3], Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
+        moduleStates[2] = SwerveModuleState.optimize(moduleStates[2], Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
 
         for (int i = 0; i < 4; i++)
         {

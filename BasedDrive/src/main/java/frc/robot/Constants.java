@@ -34,7 +34,7 @@ public class Constants {
        public static double MAX_MODULE_ROTATION_SPEED;
 
        //PID constants
-       public static double SPEED_P = 0.0; 
+       public static double SPEED_P = 0.0;
        public static double ANGLE_P = 0.01;
        public static double I;
        public static double D;
