@@ -18,32 +18,15 @@ import com.revrobotics.CANSparkMax.IdleMode;
 
 public class SwerveModule {
 
-    int angleID;
-    int speedID;
-
-    CANSparkMax m_speedMotor;
-    CANSparkMax m_angleMotor;
-
-    SparkMaxAnalogSensor m_absEncoder;
     
 
     public SwerveModule(int angleID, int speedID) {
-      this.angleID = angleID;
-      this.speedID = speedID;
-
-      m_speedMotor = new CANSparkMax(speedID, MotorType.kBrushless);
-      m_angleMotor = new CANSparkMax(angleID, MotorType.kBrushless);
-        
-      m_absEncoder = m_angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
+      
 
       
     }
 
-    public double getAbsAngle()
-    {
-      return m_absEncoder.getPosition() * 360; 
-    }
-
+  
 
   }
 
