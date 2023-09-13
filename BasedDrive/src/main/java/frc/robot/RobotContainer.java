@@ -42,7 +42,7 @@ public class RobotContainer {
     //Is this right??
     //I know this is terrible practice but I was a tad curious as to lambda and anonymous class syntax... I'll replace it with something
     //formal if it doesn't work or once a better solution to this problem is found
-    m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
+    //m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
     //m_buttonA.onTrue(new InstantCommand(() -> m_swerve.resetAllModuleAbsEncoders()));
   }
 
