@@ -24,6 +24,7 @@ public class AutoAlignCommand extends CommandBase {
   double frontOffset;
   double theta;
   Timer amogusTimer;
+  boolean boolsWorld;
 
   
   public AutoAlignCommand(SwerveSubsystem p_swerveSubsystem, LimelightSubsystem p_limelight, XboxController p_controller) {
@@ -38,13 +39,14 @@ public class AutoAlignCommand extends CommandBase {
     @Override
     public void initialize() {
         amogusTimer = new Timer();
-        if(m_limelight.getTv()){
+        if(m_limelight.getTv() && !boolsWorld){
             double[] camTran = m_limelight.getCamTran();
             
             sideOffset = camTran[0] * LIMELIGHT_TO_METER_CONVERSION;
             frontOffset = camTran[2] * LIMELIGHT_TO_METER_CONVERSION;
             theta = Math.atan2(sideOffset, frontOffset);
             amogusTimer.start();
+            boolsWorld = true;
         }
     }
 
@@ -69,6 +71,7 @@ public class AutoAlignCommand extends CommandBase {
     public boolean isFinished() {
         if(amogusTimer.hasElapsed(SWERVE_TIME)){
             amogusTimer.stop();
+            boolsWorld = false;
             return true;
         }
         return false;

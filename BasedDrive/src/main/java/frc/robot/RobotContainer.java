@@ -10,7 +10,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.SwerveDefaultCommand;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 public class RobotContainer {
@@ -22,9 +24,11 @@ public class RobotContainer {
 
   //SUBSYSTEMS
   SwerveSubsystem m_swerve = new SwerveSubsystem();
+  LimelightSubsystem m_limelight = new LimelightSubsystem();
 
   //COMMANDS
   SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve, m_controller);
+  AutoAlignCommand m_AutoAlignCommand = new AutoAlignCommand(m_swerve, m_limelight, m_controller);
 
   //BUTTONS
   private final JoystickButton m_buttonX = new JoystickButton(m_controller, XboxController.Button.kX.value);
@@ -44,6 +48,7 @@ public class RobotContainer {
     //formal if it doesn't work or once a better solution to this problem is found
     m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
     //m_buttonA.onTrue(new InstantCommand(() -> m_swerve.resetAllModuleAbsEncoders()));
+    m_buttonA.onTrue(m_AutoAlignCommand);
   }
 
   public Command getAutonomousCommand() {
