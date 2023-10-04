@@ -23,7 +23,7 @@ public class AutoAlignCommand extends CommandBase {
   double sideOffset;
   double frontOffset;
   double theta;
-  Timer amogusTimer;
+  Timer amogusTimer = new Timer();
   boolean boolsWorld;
 
   
@@ -38,7 +38,6 @@ public class AutoAlignCommand extends CommandBase {
   // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        amogusTimer = new Timer();
         if(m_limelight.getTv() && !boolsWorld){
             double[] camTran = m_limelight.getCamTran();
             
@@ -47,6 +46,7 @@ public class AutoAlignCommand extends CommandBase {
             theta = Math.atan2(sideOffset, frontOffset);
             amogusTimer.start();
             boolsWorld = true;
+            amogusTimer.reset();
         }
     }
 
