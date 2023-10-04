@@ -299,7 +299,7 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
-            System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
+            // System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
             //System.out.println("counts " + m_backLeft.countsPerRotation());
 
             //System.out.println("navX angle " + getYaw());
