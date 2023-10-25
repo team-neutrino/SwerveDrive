@@ -58,9 +58,6 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModuleState backRightStatePast;
 
     //SIMULATION
-    Pose2d newPose = new Pose2d(3, 3, Rotation2d.fromDegrees(0));
-    SwerveModulePosition[] swervePositions = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
-    SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(0), swervePositions, newPose);
     Field2d field = new Field2d();
     //XboxController m_driverController = new XboxController(0);
 
@@ -83,6 +80,18 @@ public class SwerveSubsystem extends SubsystemBase {
         m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
 
         zeroYaw();
+
+        //AUTON
+        SwerveModulePosition frontRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
+        SwerveModulePosition frontLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
+        SwerveModulePosition backRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
+        SwerveModulePosition backLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
+
+        Pose2d autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw() * -1));
+        SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
+        SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw() * -1), swervePositions, autonPose);
+
+
 
         //SIMULATION
         SmartDashboard.putData("Field", field);
@@ -299,7 +308,7 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
-            System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
+            //System.out.println("Back left module velocity: " + m_backLeft.getVelocityMPS());
             //System.out.println("counts " + m_backLeft.countsPerRotation());
 
             //System.out.println("navX angle " + getYaw());

@@ -66,6 +66,8 @@ public class SwerveModule {
         //(0, 360) now instead of (0, 3.3)
         absAngleEncoder.setPositionConversionFactor(360 / 3.3);
         speedEncoder.setVelocityConversionFactor(60);
+        //divide by the gear ratio to convert to wheel rotations, multiply by circumference to get meters
+        speedEncoder.setPositionConversionFactor(Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
 
         anglePIDController = angleMotor.getPIDController();
         anglePIDController.setFeedbackDevice(absAngleEncoder);
@@ -106,12 +108,17 @@ public class SwerveModule {
         return angleEncoder.getPosition(); 
     }
 
+    public double getWheelDistance()
+    {
+      return speedEncoder.getPosition();
+    }
+
     public double getAbsolutePosition()
     {
       return adjustAngleOut(absAngleEncoder.getPosition());
     }
 
-    //is this method garbage now?
+    //used to convert back to wpilib system for angle optimization (don't delete)
     public double getAdjustedAbsolutePosition()
     {
       double pos = getAbsolutePosition();
@@ -175,7 +182,7 @@ public class SwerveModule {
     }
 
     /**
-     * Helper method that takes in the raw position from the absolute analog encoder that is present module and adjusts the retrieved angle as
+     * Helper method that takes in the raw position from the absolute analog encoder that is present in the module and adjusts the retrieved angle as
      * necessary to account for known offsets.
      * @param angle The initial position (0, 360) (increasing clockwise) from the absolute encoder that has not been adjusted for offsets
      * @return Accurate angle that reflects the real module angle after accounting for offsets
