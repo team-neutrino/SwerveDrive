@@ -41,7 +41,7 @@ public class Constants {
 
        //Feedforward constants
        public static double Ks = 0.1256; //0.1 - 0.15 seems to be a good starting place, possibly lower. Robot casserole uses 0.15
-       public static double Kv = 2.6221; //robot casserole uses 0.02, so maybe 0.01?
+       public static double Kv = 2.6221; 
        //public static double Ka = 0.0; needed?
 
        //Gear ratio
