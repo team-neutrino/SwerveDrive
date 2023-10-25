@@ -111,6 +111,7 @@ public class SwerveModule {
       return adjustAngleOut(absAngleEncoder.getPosition());
     }
 
+    //is this method garbage now?
     public double getAdjustedAbsolutePosition()
     {
       double pos = getAbsolutePosition();
