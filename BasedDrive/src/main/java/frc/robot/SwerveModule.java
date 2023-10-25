@@ -67,6 +67,7 @@ public class SwerveModule {
         absAngleEncoder.setPositionConversionFactor(360 / 3.3);
         speedEncoder.setVelocityConversionFactor(60);
         //divide by the gear ratio to convert to wheel rotations, multiply by circumference to get meters
+        //this conversion seems to be correct
         speedEncoder.setPositionConversionFactor(Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
 
         anglePIDController = angleMotor.getPIDController();

@@ -105,9 +105,9 @@ public class SwerveSubsystem extends SubsystemBase {
         //omega: input joystick angular value (right joystick)
 
         //deadzones stick inputs and scales + constrains chassis velocities
-        vx = Limiter.joystickScale(Limiter.deadzone(vx, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
-        vy = Limiter.joystickScale(Limiter.deadzone(vy, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
-        omega = Limiter.joystickScale(Limiter.deadzone(omega, 0.1), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
+        vx = Limiter.joystickScale(Limiter.deadzone(vx, 0.2), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        vy = Limiter.joystickScale(Limiter.deadzone(vy, 0.2), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        omega = Limiter.joystickScale(Limiter.deadzone(omega, 0.2), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
 
         //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
@@ -333,6 +333,9 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("back right encoder voltage " + m_backRight.getAbsEncoderVoltage());
             //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition()); // 82.7
             //System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
+
+            System.out.println("front right wheel distance " + m_frontRight.getWheelDistance());
+            //System.out.println("front left wheel distance " + m_frontLeft.getWheelDistance());
         }
     }
 
