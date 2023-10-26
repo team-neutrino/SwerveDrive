@@ -14,11 +14,18 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.kauailabs.navx.frc.AHRS;
 
 
@@ -91,7 +98,21 @@ public class SwerveSubsystem extends SubsystemBase {
         SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
         SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw() * -1), swervePositions, autonPose);
 
+        Pose2d start = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+        Pose2d middle = new Pose2d(1, 1, Rotation2d.fromDegrees(0));
+        Pose2d end = new Pose2d(1.5, 1.5, Rotation2d.fromDegrees(0));
 
+        TrajectoryConfig config = new TrajectoryConfig(1, 1);
+
+        ArrayList<Pose2d> arr = new ArrayList<Pose2d>();
+
+        arr.add(start);
+        arr.add(middle);
+        arr.add(end);
+
+        Trajectory testTrajectory = TrajectoryGenerator.generateTrajectory(arr, config);
+
+        
 
         //SIMULATION
         SmartDashboard.putData("Field", field);
