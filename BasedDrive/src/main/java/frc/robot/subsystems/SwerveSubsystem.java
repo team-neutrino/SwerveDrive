@@ -4,7 +4,9 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.*;
 import frc.robot.util.Limiter;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -64,6 +67,16 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModuleState backLeftStatePast;
     SwerveModuleState backRightStatePast;
 
+    //AUTON
+    SwerveModulePosition frontRightPosition;
+    SwerveModulePosition frontLeftPosition;
+    SwerveModulePosition backRightPosition;
+    SwerveModulePosition backLeftPosition;
+    Pose2d autonPose;
+    SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
+    SwerveDriveOdometry swerveOdometry;
+    HolonomicDriveController controller;
+
     //SIMULATION
     Field2d field = new Field2d();
     //XboxController m_driverController = new XboxController(0);
@@ -89,14 +102,13 @@ public class SwerveSubsystem extends SubsystemBase {
         zeroYaw();
 
         //AUTON
-        SwerveModulePosition frontRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
-        SwerveModulePosition frontLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
-        SwerveModulePosition backRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
-        SwerveModulePosition backLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
+        frontRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
+        frontLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
+        backRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
+        backLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
 
-        Pose2d autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw() * -1));
-        SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
-        SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw() * -1), swervePositions, autonPose);
+        autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw() * -1));
+        swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw() * -1), swervePositions, autonPose);
 
         Pose2d start = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
         Pose2d middle = new Pose2d(1, 1, Rotation2d.fromDegrees(0));
@@ -111,6 +123,10 @@ public class SwerveSubsystem extends SubsystemBase {
         arr.add(end);
 
         Trajectory testTrajectory = TrajectoryGenerator.generateTrajectory(arr, config);
+
+        controller = new HolonomicDriveController
+        (new PIDController(0, 0, 0), new PIDController(0, 0, 0), 
+        new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
 
         
 
@@ -146,7 +162,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
 
-        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw() * -1));
+        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
         moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
 
@@ -275,7 +291,8 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getYaw() {
-        return m_navX.getYaw(); // * -1? I think the 2023 code has this for some reason
+        return m_navX.getYaw() * -1; // INCLUDE THE NEGATIVE ONE it is needed to make sure that the negatives go the right way
+        //navX default system is opposite what all of wpilib uses, where negative is on the right from the center I think
     }
 
     public double getPitch() {
@@ -304,6 +321,17 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic()
     {
+        //AUTON
+        frontRightPosition = m_frontRight.getPosition();
+        frontLeftPosition = m_frontLeft.getPosition();
+        backRightPosition = m_backRight.getPosition();
+        backLeftPosition = m_backLeft.getPosition();
+
+        autonPose = swerveOdometry.update(getYaw(), )
+
+
+
+
         // newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
         //     new SwerveModulePosition[] {
         //         new SwerveModulePosition(m_frontLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontLeft.getDegrees())),

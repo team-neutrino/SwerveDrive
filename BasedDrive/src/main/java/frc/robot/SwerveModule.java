@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.util.Limiter;
@@ -112,6 +113,11 @@ public class SwerveModule {
     public double getWheelDistance()
     {
       return speedEncoder.getPosition();
+    }
+
+    public SwerveModulePosition getPosition()
+    {
+      return new SwerveModulePosition(getWheelDistance(), Rotation2d.fromDegrees(getAbsolutePosition()));
     }
 
     public double getAbsolutePosition()
