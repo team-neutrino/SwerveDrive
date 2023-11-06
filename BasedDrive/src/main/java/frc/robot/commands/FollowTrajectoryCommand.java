@@ -4,13 +4,21 @@
 
 package frc.robot.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.TrajectoryConfigConstants;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.util.AutonomousUtil;
+import frc.robot.util.PoseTriplet;
 
 public class FollowTrajectoryCommand extends CommandBase {
   /** Creates a new FollowTrajectoryCommand. */
@@ -19,18 +27,25 @@ public class FollowTrajectoryCommand extends CommandBase {
   HolonomicDriveController m_controller;
   Trajectory m_t;
   Timer timer = new Timer();
-  Trajectory.State state;
-  ChassisSpeeds reference;
+  Trajectory.State referenceState;
+  ChassisSpeeds referenceSpeeds;
   SwerveDriveOdometry m_odometry;
+  Trajectory straightTraj;
+  
 
 
-  public FollowTrajectoryCommand(SwerveSubsystem p_swerve, HolonomicDriveController p_controller, Trajectory p_t, SwerveDriveOdometry p_odometry) {
+  public FollowTrajectoryCommand(SwerveSubsystem p_swerve) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_swerve = p_swerve;
-    m_controller = p_controller;
-    m_t = p_t;
-    m_odometry = p_odometry;
+    // m_controller = p_controller;
+    // m_t = p_t;
+    // m_odometry = p_odometry;
+    ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0, 1, 0), 
+    new PoseTriplet(0, 1.5, 0)));
 
+    straightTraj = AutonomousUtil.generateTrajectoryFromPoses(straightArray, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
+    // straightTraj.add(new PoseTriplet(0, 0, 0));
+    // straightTraj.
   }
 
   // Called when the command is initially scheduled.
@@ -42,8 +57,9 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    state = m_t.sample(timer.get());
-    reference = m_controller.calculate()
+    //referenceState = m_t.sample(timer.get());
+    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), straightTraj);
+    m_swerve.swerve(referenceSpeeds.vxMetersPerSecond, referenceSpeeds.vyMetersPerSecond, referenceSpeeds.omegaRadiansPerSecond);
   }
 
   // Called once the command ends or is interrupted.

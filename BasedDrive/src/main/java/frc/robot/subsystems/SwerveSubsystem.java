@@ -39,8 +39,8 @@ public class SwerveSubsystem extends SubsystemBase {
     private SwerveModule m_backLeft;
     private SwerveModule m_backRight;
     
-    private PIDController m_PIDSpeed;
-    private PIDController m_PIDAngle;
+    // private PIDController m_PIDSpeed;
+    // private PIDController m_PIDAngle;
 
     private SimpleMotorFeedforward m_feedForward;
 
@@ -91,10 +91,10 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
         m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
-        m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
-        m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
-        //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
-        m_PIDAngle.enableContinuousInput(0.0, 360.0);
+        // m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
+        // m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
+        // //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
+        // m_PIDAngle.enableContinuousInput(0.0, 360.0);
 
         //I think we're only using feedforward for the wheel speed, not module angle
         m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
@@ -135,7 +135,7 @@ public class SwerveSubsystem extends SubsystemBase {
         field.getRobotObject().close();
     }
 
-    public void Swerve(double vx, double vy, double omega) {
+    public void swerve(double vx, double vy, double omega) {
 
         //vx: input joystick Y value (left joystick)
         //vy: input joystick X value (left joystick)
@@ -290,6 +290,12 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
+    public ChassisSpeeds trackTrajectory(double timeStamp, Trajectory t)
+    {
+        Trajectory.State referenceState = t.sample(timeStamp);
+        return controller.calculate(autonPose, referenceState, Rotation2d.fromDegrees(0));
+    }
+
     public double getYaw() {
         return m_navX.getYaw() * -1; // INCLUDE THE NEGATIVE ONE it is needed to make sure that the negatives go the right way
         //navX default system is opposite what all of wpilib uses, where negative is on the right from the center I think
@@ -327,7 +333,7 @@ public class SwerveSubsystem extends SubsystemBase {
         backRightPosition = m_backRight.getPosition();
         backLeftPosition = m_backLeft.getPosition();
 
-        autonPose = swerveOdometry.update(getYaw(), )
+        autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
 
 
 
