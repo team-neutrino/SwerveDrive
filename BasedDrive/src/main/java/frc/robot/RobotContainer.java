@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.FollowTrajectoryCommand;
 import frc.robot.commands.SwerveDefaultCommand;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -25,6 +26,7 @@ public class RobotContainer {
 
   //COMMANDS
   SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve, m_controller);
+  FollowTrajectoryCommand m_followTrajectory = new FollowTrajectoryCommand(m_swerve);
 
   //BUTTONS
   private final JoystickButton m_buttonX = new JoystickButton(m_controller, XboxController.Button.kX.value);
@@ -47,6 +49,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return m_followTrajectory;
+    //return Commands.print("No autonomous command configured");
   }
 }

@@ -64,11 +64,19 @@ public class FollowTrajectoryCommand extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_swerve.swerve(0, 0, 0);
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    if (referenceSpeeds.vxMetersPerSecond == 0 &&
+        referenceSpeeds.vyMetersPerSecond == 0 &&
+        referenceSpeeds.omegaRadiansPerSecond == 0)
+        {
+          return true;
+        }
+        return false;
   }
 }
