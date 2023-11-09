@@ -42,7 +42,7 @@ public class SwerveDefaultCommand extends CommandBase {
             //forward is negative for y, backwards is positive
             //to the right is positive for x, to the left is negative
         }
-        m_swerveSubsystem.Swerve(m_leftJoystick.getY() * -1, m_leftJoystick.getX() * -1, m_rightJoystick.getX());
+        m_swerveSubsystem.Swerve(m_leftJoystick.getY() * -1, m_leftJoystick.getX() * -1, m_rightJoystick.getX() * -1);
     
     }
 
