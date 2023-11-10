@@ -26,11 +26,12 @@ public class RobotContainer {
 
   //COMMANDS
   SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve, m_controller);
-  FollowTrajectoryCommand m_followTrajectory = new FollowTrajectoryCommand(m_swerve);
+  FollowTrajectoryCommand m_followTrajectoryCommand = new FollowTrajectoryCommand(m_swerve);
 
   //BUTTONS
   private final JoystickButton m_buttonX = new JoystickButton(m_controller, XboxController.Button.kX.value);
   private final JoystickButton m_buttonA = new JoystickButton(m_controller, XboxController.Button.kA.value);
+  private final JoystickButton m_buttonY = new JoystickButton(m_controller, XboxController.Button.kY.value);
 
   //Runs in Robot.java, robot init
   public RobotContainer() {
@@ -45,11 +46,12 @@ public class RobotContainer {
     //I know this is terrible practice but I was a tad curious as to lambda and anonymous class syntax... I'll replace it with something
     //formal if it doesn't work or once a better solution to this problem is found
     m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
+    m_buttonA.onTrue(m_followTrajectoryCommand);
     //m_buttonA.onTrue(new InstantCommand(() -> m_swerve.resetAllModuleAbsEncoders()));
   }
 
   public Command getAutonomousCommand() {
-    return m_followTrajectory;
+    return m_followTrajectoryCommand;
     //return Commands.print("No autonomous command configured");
   }
 }
