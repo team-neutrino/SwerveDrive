@@ -71,9 +71,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (referenceSpeeds.vxMetersPerSecond == 0 &&
-        referenceSpeeds.vyMetersPerSecond == 0 &&
-        referenceSpeeds.omegaRadiansPerSecond == 0)
+    if (timer.get() >= straightTraj.getTotalTimeSeconds())
         {
           return true;
         }
