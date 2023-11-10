@@ -116,7 +116,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
 
-        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw() * -1));
+        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
         moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
 
@@ -245,7 +245,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getYaw() {
-        return m_navX.getYaw(); // * -1? I think the 2023 code has this for some reason
+        return m_navX.getYaw() * -1; // * -1? I think the 2023 code has this for some reason
     }
 
     public double getPitch() {
