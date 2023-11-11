@@ -107,8 +107,8 @@ public class SwerveSubsystem extends SubsystemBase {
         backRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
         backLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
 
-        autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw() * -1));
-        swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw() * -1), swervePositions, autonPose);
+        autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw()));
+        swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
         Pose2d start = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
         Pose2d middle = new Pose2d(1, 1, Rotation2d.fromDegrees(0));
@@ -301,6 +301,19 @@ public class SwerveSubsystem extends SubsystemBase {
         //navX default system is opposite what all of wpilib uses, where negative is on the right from the center I think
     }
 
+    public double getAdjustedYaw()
+    {
+        double yaw = m_navX.getYaw();
+        if (yaw < 0)
+        {
+            return yaw * -1;
+        }
+        else
+        {
+            return 360 - yaw;
+        }
+    }
+
     public double getPitch() {
         return m_navX.getPitch();
     }
@@ -335,7 +348,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
 
-
+        //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
+        System.out.println("swerveOdomety angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
 
 
         // newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
@@ -358,8 +372,10 @@ public class SwerveSubsystem extends SubsystemBase {
         
 
         cycle++;
-        if (cycle % 8 == 0)
+        if (cycle % 4 == 0)
         {
+            System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getAdjustedYaw()));
+
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
@@ -389,7 +405,7 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition()); // 82.7
             //System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
 
-            System.out.println("front right wheel distance " + m_frontRight.getWheelDistance());
+            //System.out.println("front right wheel distance " + m_frontRight.getWheelDistance());
             //System.out.println("front left wheel distance " + m_frontLeft.getWheelDistance());
         }
     }
