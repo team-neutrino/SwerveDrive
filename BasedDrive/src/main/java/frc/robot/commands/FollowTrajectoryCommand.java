@@ -40,8 +40,8 @@ public class FollowTrajectoryCommand extends CommandBase {
     // m_controller = p_controller;
     // m_t = p_t;
     // m_odometry = p_odometry;
-    ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0, 1, 0), 
-    new PoseTriplet(0, 1.5, 0)));
+    ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(1, 0, 0), 
+    new PoseTriplet(1.5, 0, 0)));
 
     straightTraj = AutonomousUtil.generateTrajectoryFromPoses(straightArray, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
     // straightTraj.add(new PoseTriplet(0, 0, 0));
@@ -58,6 +58,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    System.out.println("command running");
     //referenceState = m_t.sample(timer.get());
     referenceSpeeds = m_swerve.trackTrajectory(timer.get(), straightTraj);
     m_swerve.swerve(referenceSpeeds.vxMetersPerSecond, referenceSpeeds.vyMetersPerSecond, referenceSpeeds.omegaRadiansPerSecond);
@@ -67,6 +68,8 @@ public class FollowTrajectoryCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_swerve.swerve(0, 0, 0);
+    timer.stop();
+    timer.reset();
   }
 
   // Returns true when the command should end.

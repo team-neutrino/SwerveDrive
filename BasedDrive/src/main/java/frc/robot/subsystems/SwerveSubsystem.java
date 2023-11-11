@@ -84,6 +84,9 @@ public class SwerveSubsystem extends SubsystemBase {
    double vFactor = 0;
    boolean omegaOnPrev = false;
 
+   double lastWheelSpeed = 0;
+   double[] lastWheelSpeeds = new double[4];
+
     //SIMULATION
     Field2d field = new Field2d();
     //XboxController m_driverController = new XboxController(0);
@@ -137,8 +140,8 @@ public class SwerveSubsystem extends SubsystemBase {
         Trajectory testTrajectory = TrajectoryGenerator.generateTrajectory(arr, config);
 
         controller = new HolonomicDriveController
-        (new PIDController(0, 0, 0), new PIDController(0, 0, 0), 
-        new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
+        (new PIDController(0.1, 0, 0), new PIDController(0.1, 0, 0), 
+        new ProfiledPIDController(0.1, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
 
         swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
@@ -182,18 +185,51 @@ public class SwerveSubsystem extends SubsystemBase {
         {
             //System.out.println("omega is zero ");
 
-            //vFactor = 1.27 * (lastOmega - 1.5 * Math.PI) + 6;
+            vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
 
-            //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
-            //omega += angleOut;
+            double vFactor2 = 18 * (lastWheelSpeed);
+
+            if (lastOmega > 0)
+            {
+                angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+            }
+            else
+            {
+                angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor2);
+            }
+
+            angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+            omega += angleOut;
             //System.out.println("navx angle " + getYaw());
-            System.out.println("omega " + lastOmega + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
-            System.out.println("error " + (lastAngle - getYaw()));
+            if (cycle % 10 == 0)
+            {
+                // System.out.println("last omega " + lastOmega + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
+                // System.out.println("error " + (lastAngle - getYaw()));
+
+                // System.out.println("last wheel speed " + lastWheelSpeed + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
+                // System.out.println("error " + (lastAngle - getYaw()));
+            }
         }
         else
         {
             lastAngle = getYaw();
             lastOmega = omega;
+
+            lastWheelSpeeds[0] = m_frontRight.getVelocityMPS();
+            lastWheelSpeeds[1] = m_frontLeft.getVelocityMPS();
+            lastWheelSpeeds[2] = m_backLeft.getVelocityMPS();
+            lastWheelSpeeds[3] = m_backRight.getVelocityMPS();
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (lastWheelSpeeds[i] < 0) lastWheelSpeeds[i] *= -1;
+
+                lastWheelSpeed += lastWheelSpeeds[i];
+            }
+
+            lastWheelSpeed /= 4;
+
+            //lastWheelSpeed = m_backLeft.getVelocityMPS();
             //System.out.println("last angle " + lastAngle);
 
         }
@@ -366,6 +402,7 @@ public class SwerveSubsystem extends SubsystemBase {
         System.out.println("NavX yaw has been zeroed---------------");
         swerveOdometry.resetPosition(Rotation2d.fromDegrees(0), swervePositions, new Pose2d());
         lastAngle = 0;
+        lastOmega = 0;
     }
 
     // public void resetAllModuleAbsEncoders()
