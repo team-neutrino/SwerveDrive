@@ -43,6 +43,8 @@ public class FollowTrajectoryCommand extends CommandBase {
     ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0, 1, 0), 
     new PoseTriplet(0, 1.5, 0)));
 
+    m_swerve.zeroYaw();
+
     straightTraj = AutonomousUtil.generateTrajectoryFromPoses(straightArray, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
     // straightTraj.add(new PoseTriplet(0, 0, 0));
     // straightTraj.

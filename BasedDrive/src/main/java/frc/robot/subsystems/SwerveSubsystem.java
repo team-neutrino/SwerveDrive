@@ -40,7 +40,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private SwerveModule m_backRight;
     
     // private PIDController m_PIDSpeed;
-    // private PIDController m_PIDAngle;
+    private PIDController m_PIDAngle;
 
     private SimpleMotorFeedforward m_feedForward;
 
@@ -72,10 +72,14 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModulePosition frontLeftPosition;
     SwerveModulePosition backRightPosition;
     SwerveModulePosition backLeftPosition;
-    Pose2d autonPose;
-    SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
+    Pose2d autonPose = new Pose2d();
+    //SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
+    SwerveModulePosition[] swervePositions = new SwerveModulePosition[4];
     SwerveDriveOdometry swerveOdometry;
     HolonomicDriveController controller;
+    
+   double lastAngle = 0;
+   double angleOut = 0;
 
     //SIMULATION
     Field2d field = new Field2d();
@@ -92,14 +96,14 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
         // m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
-        // m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
+        m_PIDAngle = new PIDController(0.1, 0, 0);
         // //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
-        // m_PIDAngle.enableContinuousInput(0.0, 360.0);
+        m_PIDAngle.enableContinuousInput(-180, 180);
 
         //I think we're only using feedforward for the wheel speed, not module angle
         m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
 
-        zeroYaw();
+        
 
         //AUTON
         frontRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
@@ -107,8 +111,13 @@ public class SwerveSubsystem extends SubsystemBase {
         backRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
         backLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
 
+        swervePositions[0] = frontRightPosition;
+        swervePositions[1] = frontLeftPosition;
+        swervePositions[2] = backRightPosition;
+        swervePositions[3] = backLeftPosition;
+
         autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw()));
-        swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
+        // swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
         Pose2d start = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
         Pose2d middle = new Pose2d(1, 1, Rotation2d.fromDegrees(0));
@@ -128,11 +137,13 @@ public class SwerveSubsystem extends SubsystemBase {
         (new PIDController(0, 0, 0), new PIDController(0, 0, 0), 
         new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
 
-        
+        swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
         //SIMULATION
         SmartDashboard.putData("Field", field);
         field.getRobotObject().close();
+
+        zeroYaw();
     }
 
     public void swerve(double vx, double vy, double omega) {
@@ -159,6 +170,22 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // System.out.println("vx " + vx);
         // System.out.println("vy " + vy);
+
+        // final double CURRENT_YAW = getYaw();
+        // omega += m_PIDAngle.calculate( CURRENT_YAW, CURRENT_YAW + omega);
+       
+        // System.out.println("omega " + omega);
+        if (omega == 0)
+        {
+            //System.out.println("omega is zero ");
+            angleOut = m_PIDAngle.calculate(getYaw(), lastAngle);
+            omega += angleOut;
+        }
+        else
+        {
+            lastAngle = getYaw();
+            System.out.println("last angle " + lastAngle);
+        }
 
         ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
 
@@ -373,11 +400,11 @@ public class SwerveSubsystem extends SubsystemBase {
         
 
         cycle++;
-        if (cycle % 4 == 0)
+        if (cycle % 12 == 0)
         {
             //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getAdjustedYaw()));
 
-            System.out.println("odometry angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
+            //System.out.println("odometry angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
             System.out.println("navX angle " + getYaw());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());

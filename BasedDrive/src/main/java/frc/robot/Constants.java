@@ -29,7 +29,7 @@ public class Constants {
        public static double angularVelocity = Math.PI/2;
 
        //Max velocities in m/s or rad/s (for rotation)
-       public static double MAX_CHASSIS_LINEAR_SPEED = 1;
+       public static double MAX_CHASSIS_LINEAR_SPEED = 2;
        public static double MAX_CHASSIS_ROTATIONAL_SPEED = 1.5 * Math.PI;
        public static double MAX_MODULE_ROTATION_SPEED;
 
