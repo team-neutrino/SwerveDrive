@@ -161,7 +161,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         if (omega == 0)
         {
-            PIDOut = m_PIDAngle.calculate(getYaw(), lastAngle);
+            PIDOut = m_PIDAngle.calculate(getAdjustedYaw(), lastAngle);
             omega += PIDOut;
         }
         else if (omega != 0)
@@ -258,6 +258,19 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public double getYaw() {
         return m_navX.getYaw() * -1; // * -1? I think the 2023 code has this for some reason
+    }
+
+    public double getAdjustedYaw()
+    {
+        double yaw = m_navX.getYaw();
+        if (yaw < 0)
+        {
+            return yaw * -1;
+        }
+        else
+        {
+            return 360 - yaw;
+        }
     }
 
     public double getPitch() {
