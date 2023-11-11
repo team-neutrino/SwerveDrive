@@ -326,6 +326,7 @@ public class SwerveSubsystem extends SubsystemBase {
     {
         m_navX.zeroYaw();
         System.out.println("NavX yaw has been zeroed---------------");
+        swerveOdometry.resetPosition(Rotation2d.fromDegrees(0), swervePositions, new Pose2d());
     }
 
     // public void resetAllModuleAbsEncoders()
@@ -349,7 +350,7 @@ public class SwerveSubsystem extends SubsystemBase {
         autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
 
         //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
-        System.out.println("swerveOdomety angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
+        //System.out.println("swerveOdomety angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
 
 
         // newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
@@ -360,7 +361,7 @@ public class SwerveSubsystem extends SubsystemBase {
         //         new SwerveModulePosition(m_backRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backRight.getDegrees()))
         //     });
 
-        // field.getObject("Sim Robot").setPose(newPose);
+        field.getObject("real robot").setPose(autonPose);
 
         //comment this out when not simulating
         //Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
@@ -374,7 +375,10 @@ public class SwerveSubsystem extends SubsystemBase {
         cycle++;
         if (cycle % 4 == 0)
         {
-            System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getAdjustedYaw()));
+            //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getAdjustedYaw()));
+
+            System.out.println("odometry angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
+            System.out.println("navX angle " + getYaw());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
