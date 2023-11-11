@@ -80,6 +80,8 @@ public class SwerveSubsystem extends SubsystemBase {
     
    double lastAngle = 0;
    double angleOut = 0;
+   double lastOmega = 0;
+   double vFactor = 0;
 
     //SIMULATION
     Field2d field = new Field2d();
@@ -178,13 +180,18 @@ public class SwerveSubsystem extends SubsystemBase {
         if (omega == 0)
         {
             //System.out.println("omega is zero ");
-            angleOut = m_PIDAngle.calculate(getYaw(), lastAngle);
+
+            vFactor = 1.27 * (lastOmega - 1.5 * Math.PI) + 6;
+
+            angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
             omega += angleOut;
         }
         else
         {
             lastAngle = getYaw();
+            lastOmega = omega;
             System.out.println("last angle " + lastAngle);
+            System.out.println("navx angle " + getYaw());
         }
 
         ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
