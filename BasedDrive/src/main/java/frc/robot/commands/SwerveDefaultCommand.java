@@ -37,8 +37,10 @@ public class SwerveDefaultCommand extends CommandBase {
         cycle++;
         if (cycle % 10 == 0)
         {
-            // System.out.println("left stick y " + m_controller.getLeftY());
-            // System.out.println("left stick x " + m_controller.getLeftX());
+            // System.out.println("controller inputs: \nleft stick y " + m_controller.getLeftY() + 
+            // "\nleft stick x " + m_controller.getLeftX() + "\nright stick x " + m_controller.getRightX()
+            // + "\n \nStick inputs \nleft stick y " + m_leftJoystick.getY() + "\nleft stick x " + m_leftJoystick.getX()
+            // + "/nright stick x " + m_rightJoystick.getX());
             //forward is negative for y, backwards is positive
             //to the right is positive for x, to the left is negative
         }
