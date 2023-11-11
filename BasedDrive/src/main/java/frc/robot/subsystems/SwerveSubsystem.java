@@ -118,7 +118,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
 
-        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw() * -1));
+        ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
         moduleStates = m_kinematics.toSwerveModuleStates(moduleSpeeds);
 
