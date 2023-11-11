@@ -70,7 +70,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
     //Added by Aneesh
-    testImplementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation files('libs/WiiRemoteJ.jar')
+    implementation files('libs/bluecove-2.1.0.jar')
 }
 
 test {
