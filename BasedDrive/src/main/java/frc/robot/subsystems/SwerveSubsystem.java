@@ -66,6 +66,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     //DELETE LATER
     double cycle = 0;
+    double lastAngle = 0;
+    double PIDOut = 0;
 
     public SwerveSubsystem() {
 
@@ -74,8 +76,8 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
         m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
-        m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
-        m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
+        //m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
+        m_PIDAngle = new PIDController(0.1, 0, 0);
         //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
         m_PIDAngle.enableContinuousInput(0.0, 360.0);
 
@@ -96,9 +98,9 @@ public class SwerveSubsystem extends SubsystemBase {
         //omega: input joystick angular value (right joystick)
 
         //deadzones stick inputs and scales + constrains chassis velocities
-        vx = Limiter.joystickScale(Limiter.deadzone(vx, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
-        vy = Limiter.joystickScale(Limiter.deadzone(vy, 0.1), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
-        omega = Limiter.joystickScale(Limiter.deadzone(omega, 0.1), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
+        vx = Limiter.joystickScale(Limiter.deadzone(vx, 0.2), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        vy = Limiter.joystickScale(Limiter.deadzone(vy, 0.2), -Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED, Constants.Swerve.MAX_CHASSIS_LINEAR_SPEED);
+        omega = Limiter.joystickScale(Limiter.deadzone(omega, 0.2), -Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED, Constants.Swerve.MAX_CHASSIS_ROTATIONAL_SPEED);
 
         //quick realization: somewhere in here our x and y direction needs to be multiplied by -1 (or not)
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
@@ -156,6 +158,16 @@ public class SwerveSubsystem extends SubsystemBase {
                     moduleStates[i].speedMetersPerSecond = 0;
                 }
             }
+
+        if (omega == 0)
+        {
+            PIDOut = m_PIDAngle.calculate(getYaw(), lastAngle);
+            omega += PIDOut;
+        }
+        else if (omega != 0)
+        {
+            lastAngle = getYaw();
+        }
 
         //I don't know if the line below will need to be used. After testing once it becomes clear how the chassis speeds transformation
         //effects module speeds we can remove it or put in place a reasonable constant. Knowing the maximum wheel speed is necessary
@@ -245,7 +257,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getYaw() {
-        return m_navX.getYaw(); // * -1? I think the 2023 code has this for some reason
+        return m_navX.getYaw() * -1; // * -1? I think the 2023 code has this for some reason
     }
 
     public double getPitch() {
@@ -259,6 +271,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public void zeroYaw()
     {
         m_navX.zeroYaw();
+        lastAngle = getYaw();
         System.out.println("NavX yaw has been zeroed---------------");
     }
 
