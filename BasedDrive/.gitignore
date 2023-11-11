@@ -50,6 +50,10 @@
 
 # Package Files #
 *.jar
+
+# Added by Aneesh
+!libs/**/*.jar
+
 *.war
 *.nar
 *.ear
