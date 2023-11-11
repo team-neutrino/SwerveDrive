@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.SwerveDefaultCommand;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.util.WiiMote;
+import wiiremotej.*;
 
 public class RobotContainer {
 
@@ -19,12 +21,15 @@ public class RobotContainer {
   Joystick m_leftJoystick = new Joystick(Constants.OperatorConstants.LEFT_JOYSTICK);
   Joystick m_rightJoystick = new Joystick(Constants.OperatorConstants.RIGHT_JOYSTICK);
   XboxController m_controller = new XboxController(Constants.OperatorConstants.XBOX_CONTROLLER);
+  WiiRemote remote = new WiiRemote(new AccelerationConstants(0, 0, 0, 1, 1, 1));
+  WiiMote remoteData = new WiiMote(remote);
+  
 
   //SUBSYSTEMS
   SwerveSubsystem m_swerve = new SwerveSubsystem();
 
   //COMMANDS
-  SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve, m_controller);
+  SwerveDefaultCommand m_swerveDefaultCommand = new SwerveDefaultCommand(m_leftJoystick, m_rightJoystick, m_swerve, m_controller, remoteData);
 
   //BUTTONS
   private final JoystickButton m_buttonX = new JoystickButton(m_controller, XboxController.Button.kX.value);

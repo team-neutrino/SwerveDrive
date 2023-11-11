@@ -7,7 +7,7 @@ import wiiremotej.event.*;
 import javax.sound.sampled.*;
 import java.io.*;
 
-public class WiiMote {
+public class WiiMote extends WiiRemoteAdapter{
     private static boolean accelerometerSource = true; //true = wii remote, false = nunchuk
     private static boolean lastSource = true;
     
@@ -33,6 +33,8 @@ public class WiiMote {
     
     private static PrebufferedSound prebuf;
 
+    public double[] accelData;
+
 
     public WiiMote(WiiRemote remote)
     {
@@ -52,23 +54,14 @@ public class WiiMote {
         System.out.println("Remote continuous: " + remote.isContinuousEnabled());
     }
     
-    public void IRInputReceived(WRIREvent evt)
-    {
-        /*for (IRLight light : evt.getIRLights())
-        {
-            if (light != null)
-            {
-                System.out.println("X: "+light.getX());
-                System.out.println("Y: "+light.getY());
-            }
-        }*/
-        
-    }
+
+
     
     public void accelerationInputReceived(WRAccelerationEvent evt)
     {
-        //System.out.println("R: " + evt.getRoll());
-        //System.out.println("P: " + evt.getPitch());
+        System.out.println("R: " + evt.getRoll());
+        System.out.println("P: " + evt.getPitch());
+        accelData = new double[]{evt.getRoll(), evt.getPitch()};
         if (accelerometerSource)
         {
             lastX = x;
@@ -81,8 +74,8 @@ public class WiiMote {
             
             t++;
             
-            graph.repaint();
         }
+
         
         /*System.out.println("---Acceleration Data---");
         System.out.println("X: " + evt.getXAcceleration());
