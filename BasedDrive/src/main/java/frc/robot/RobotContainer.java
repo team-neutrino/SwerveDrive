@@ -21,7 +21,14 @@ public class RobotContainer {
   Joystick m_leftJoystick = new Joystick(Constants.OperatorConstants.LEFT_JOYSTICK);
   Joystick m_rightJoystick = new Joystick(Constants.OperatorConstants.RIGHT_JOYSTICK);
   XboxController m_controller = new XboxController(Constants.OperatorConstants.XBOX_CONTROLLER);
-  WiiRemote remote = new WiiRemote(new AccelerationConstants(0, 0, 0, 1, 1, 1));
+  WiiRemote remote = new WiiRemote(new AccelerationConstants(0,0,0,1,1,1));
+  {
+  try{
+    remote = WiiRemoteJ.findRemote();
+  } catch(Exception e){
+
+  }
+  }
   WiiMote remoteData = new WiiMote(remote);
   
 

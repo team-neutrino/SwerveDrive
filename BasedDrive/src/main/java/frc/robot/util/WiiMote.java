@@ -33,7 +33,7 @@ public class WiiMote extends WiiRemoteAdapter{
     
     private static PrebufferedSound prebuf;
 
-    public double[] accelData;
+    public double[] accelData = new double[]{0, 0};
 
 
     public WiiMote(WiiRemote remote)
