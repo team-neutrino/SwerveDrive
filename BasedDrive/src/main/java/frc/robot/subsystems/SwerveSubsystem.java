@@ -187,7 +187,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
 
-            double vFactor2 = 18 * (lastWheelSpeed);
+            double vFactor2 = 16 * (lastWheelSpeed) - 4;
 
             if (lastOmega > 0)
             {
