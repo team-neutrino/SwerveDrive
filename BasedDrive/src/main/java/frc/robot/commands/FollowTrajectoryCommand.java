@@ -31,6 +31,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   ChassisSpeeds referenceSpeeds;
   SwerveDriveOdometry m_odometry;
   Trajectory straightTraj;
+  Trajectory inftyTraj;
   
 
 
@@ -43,7 +44,13 @@ public class FollowTrajectoryCommand extends CommandBase {
     ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(1, 0, 0), 
     new PoseTriplet(1.5, 0, 0)));
 
+    ArrayList<PoseTriplet> infty = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0.75, 0.5, 0), 
+    new PoseTriplet(1.5, 0, 0), new PoseTriplet(2.25, -0.5, 0), new PoseTriplet(3, 0, 0), 
+    new PoseTriplet(2.25, 0.5, 0), new PoseTriplet(1.5, 0, 0), new PoseTriplet(0.75, -0.5, 0), 
+    new PoseTriplet(0, 0, 0)));
+
     straightTraj = AutonomousUtil.generateTrajectoryFromPoses(straightArray, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
+    inftyTraj = AutonomousUtil.generateTrajectoryFromPoses(infty, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
     // straightTraj.add(new PoseTriplet(0, 0, 0));
     // straightTraj.
   }
