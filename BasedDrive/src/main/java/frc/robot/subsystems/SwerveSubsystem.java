@@ -83,6 +83,7 @@ public class SwerveSubsystem extends SubsystemBase {
    double lastOmega = 0;
    double vFactor = 0;
    boolean omegaOnPrev = false;
+   double speedTest = 0;
 
    double lastWheelSpeed = 0;
    double[] lastWheelSpeeds = new double[4];
@@ -187,7 +188,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
 
-            double vFactor2 = 16 * (lastWheelSpeed) - 4;
+            //double vFactor2 = 16 * (lastWheelSpeed) - 4;
 
             if (lastOmega > 0)
             {
@@ -195,10 +196,10 @@ public class SwerveSubsystem extends SubsystemBase {
             }
             else
             {
-                angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor2);
+                angleOut = m_PIDAngle.calculate(getYaw(), lastAngle - vFactor);
             }
 
-            angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+            //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
             omega += angleOut;
             //System.out.println("navx angle " + getYaw());
             if (cycle % 10 == 0)
@@ -455,6 +456,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
             //System.out.println("odometry angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
             System.out.println("navX angle " + getYaw());
+
+
+            speedTest += m_frontRight.getVelocityMPS() + m_frontLeft.getVelocityMPS() + m_backRight.getVelocityMPS() + m_backLeft.getVelocityMPS();
+            speedTest /= 4;
+            System.out.println("average wheel speed " + speedTest);
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
