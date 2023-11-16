@@ -45,7 +45,7 @@ public class FollowTrajectoryCommand extends CommandBase {
     new PoseTriplet(1.5, 0, 0)));
 
     ArrayList<PoseTriplet> infty = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0.75, 0.5, 0), 
-    new PoseTriplet(1.5, 0, 0), new PoseTriplet(2.25, -0.5, 0), new PoseTriplet(3, 0, 180), 
+    new PoseTriplet(1.5, 0, 0), new PoseTriplet(2.25, -0.5, 0), new PoseTriplet(3, 0, 90), 
     new PoseTriplet(2.25, 0.5, 180), new PoseTriplet(1.5, 0, 180), new PoseTriplet(0.75, -0.5, 180), 
     new PoseTriplet(0, 0, 180)));
     //ArrayList<PoseTriplet> infty2 = new ArrayList<PoseTriplet>(Arrays.asList()));
