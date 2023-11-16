@@ -92,7 +92,7 @@ public class SwerveModule {
 
         //rpm to rps
         
-        speedEncoder.setVelocityConversionFactor(1 / (60 * 4096 * 6.55)); //needed?
+        speedEncoder.setVelocityConversionFactor(50 / (4096 * 6.55)); //* 4096 * 6.55)); //needed?
 
         //assuming we can get abs encoders to work
         //this should make it so we can use relative encoders after the correct position has been initialized

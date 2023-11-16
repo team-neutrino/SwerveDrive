@@ -32,7 +32,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   SwerveDriveOdometry m_odometry;
   Trajectory straightTraj;
   Trajectory inftyTraj;
-  
+  Trajectory infty2Traj;
 
 
   public FollowTrajectoryCommand(SwerveSubsystem p_swerve) {
@@ -45,12 +45,14 @@ public class FollowTrajectoryCommand extends CommandBase {
     new PoseTriplet(1.5, 0, 0)));
 
     ArrayList<PoseTriplet> infty = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0.75, 0.5, 0), 
-    new PoseTriplet(1.5, 0, 0), new PoseTriplet(2.25, -0.5, 0), new PoseTriplet(3, 0, 0), 
-    new PoseTriplet(2.25, 0.5, 0), new PoseTriplet(1.5, 0, 0), new PoseTriplet(0.75, -0.5, 0), 
-    new PoseTriplet(0, 0, 0)));
+    new PoseTriplet(1.5, 0, 0), new PoseTriplet(2.25, -0.5, 0), new PoseTriplet(3, 0, 180), 
+    new PoseTriplet(2.25, 0.5, 180), new PoseTriplet(1.5, 0, 180), new PoseTriplet(0.75, -0.5, 180), 
+    new PoseTriplet(0, 0, 180)));
+    //ArrayList<PoseTriplet> infty2 = new ArrayList<PoseTriplet>(Arrays.asList()));
 
     straightTraj = AutonomousUtil.generateTrajectoryFromPoses(straightArray, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
     inftyTraj = AutonomousUtil.generateTrajectoryFromPoses(infty, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG);
+    //infty2Traj = AutonomousUtil.generateTrajectoryFromPoses(infty2, TrajectoryConfigConstants.K_LESS_SPEED_FORWARD_CONFIG_R, true);
     // straightTraj.add(new PoseTriplet(0, 0, 0));
     // straightTraj.
   }
@@ -67,7 +69,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   public void execute() {
     System.out.println("command running");
     //referenceState = m_t.sample(timer.get());
-    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), straightTraj);
+    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), inftyTraj);
     m_swerve.swerve(referenceSpeeds.vxMetersPerSecond, referenceSpeeds.vyMetersPerSecond, referenceSpeeds.omegaRadiansPerSecond);
   }
 
@@ -82,7 +84,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (timer.get() >= straightTraj.getTotalTimeSeconds())
+    if (timer.get() >= inftyTraj.getTotalTimeSeconds())
         {
           return true;
         }

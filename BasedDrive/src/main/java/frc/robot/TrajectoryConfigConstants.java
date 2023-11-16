@@ -17,6 +17,10 @@ public class TrajectoryConfigConstants {
     public static final TrajectoryConfig K_LESS_SPEED_FORWARD_CONFIG = new TrajectoryConfig(1, 1)
     .setReversed(false)
     ;
+
+    public static final TrajectoryConfig K_LESS_SPEED_FORWARD_CONFIG_R = new TrajectoryConfig(1, 1)
+    .setReversed(true)
+    ;
     //in the 2023 code other things were set here like the kinematics and other voltage constraints. There is no voltage constraint class for swerve drives however
     //I think one could make the argument that this is redudant because low level control (voltage) is handled through the modules anyways. I think this is fine for now.
 }
