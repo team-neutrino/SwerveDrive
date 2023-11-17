@@ -483,6 +483,8 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("average wheel speed " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
 
+            System.out.println("incremental encoder measurement period " + m_backLeft.getMeasurementPeriod());
+
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
