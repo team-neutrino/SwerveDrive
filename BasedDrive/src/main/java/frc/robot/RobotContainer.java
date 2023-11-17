@@ -47,6 +47,7 @@ public class RobotContainer {
     //formal if it doesn't work or once a better solution to this problem is found
     m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
     m_buttonA.onTrue(m_followTrajectoryCommand);
+    m_buttonY.onTrue(new InstantCommand(() -> m_swerve.toggleAngleAlign()));
     //m_buttonA.onTrue(new InstantCommand(() -> m_swerve.resetAllModuleAbsEncoders()));
   }
 
