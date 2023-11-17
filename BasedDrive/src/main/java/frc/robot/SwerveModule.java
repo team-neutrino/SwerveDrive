@@ -249,6 +249,11 @@ public class SwerveModule {
       return speedEncoder.getCountsPerRevolution();
     }
 
+    public int getMeasurementPeriod()
+    {
+      return speedEncoder.getMeasurementPeriod();
+    }
+
     public double getVelocityMPS()
     {
       //returns the wheel speeds in m/s instead of rotations/s
