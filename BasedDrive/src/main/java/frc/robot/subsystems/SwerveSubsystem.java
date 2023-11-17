@@ -414,22 +414,15 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void toggleAngleAlign()
     {
-        if(!angleAlignOn)
+        if(!angleAlignOn) //if it's off turn it on 
         {
             angleAlignOn = true;
-        }
-        else
-        {
-            angleAlignOn = false;
-        }
-
-        if (angleAlignOn)
-        {
             System.out.println("angle alignment is on ----------------");
         }
         else
         {
-            System.out.println("angle alignment is off-----------------");
+            angleAlignOn = false;
+            System.out.println("angle alignment is off -----------------");
         }
     }
 
@@ -487,7 +480,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             speedTest += Math.abs(m_frontRight.getVelocityMPS()) + Math.abs(m_frontLeft.getVelocityMPS()) + Math.abs(m_backRight.getVelocityMPS()) + Math.abs(m_backLeft.getVelocityMPS());
             speedTest /= 4;
-            System.out.println("average wheel speed " + speedTest);
+            //System.out.println("average wheel speed " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
