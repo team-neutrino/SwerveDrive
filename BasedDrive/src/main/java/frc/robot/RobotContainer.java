@@ -52,7 +52,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return m_followTrajectoryCommand;
-    //return Commands.print("No autonomous command configured");
+    //return m_followTrajectoryCommand;
+    return Commands.print("No autonomous command configured");
   }
 }
