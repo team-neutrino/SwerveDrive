@@ -67,7 +67,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    System.out.println("command running");
+    //System.out.println("command running");
     //referenceState = m_t.sample(timer.get());
     referenceSpeeds = m_swerve.trackTrajectory(timer.get(), inftyTraj);
     m_swerve.swerve(referenceSpeeds.vxMetersPerSecond, referenceSpeeds.vyMetersPerSecond, referenceSpeeds.omegaRadiansPerSecond);
