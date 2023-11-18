@@ -4,7 +4,9 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.*;
 import frc.robot.util.Limiter;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,11 +16,19 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.kauailabs.navx.frc.AHRS;
 
 
@@ -29,8 +39,8 @@ public class SwerveSubsystem extends SubsystemBase {
     private SwerveModule m_backLeft;
     private SwerveModule m_backRight;
     
-    private PIDController m_PIDSpeed;
-    private PIDController m_PIDAngle;
+    // private PIDController m_PIDSpeed;
+    private PIDController m_PIDAngle; //used as the swerve frame angle controller, maintain angle when translating
 
     private SimpleMotorFeedforward m_feedForward;
 
@@ -57,10 +67,30 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModuleState backLeftStatePast;
     SwerveModuleState backRightStatePast;
 
+    boolean angleAlignOn = false;
+
+    //AUTON
+    SwerveModulePosition frontRightPosition;
+    SwerveModulePosition frontLeftPosition;
+    SwerveModulePosition backRightPosition;
+    SwerveModulePosition backLeftPosition;
+    Pose2d autonPose = new Pose2d();
+    //SwerveModulePosition[] swervePositions = {frontRightPosition, frontLeftPosition, backRightPosition, backLeftPosition};
+    SwerveModulePosition[] swervePositions = new SwerveModulePosition[4];
+    SwerveDriveOdometry swerveOdometry;
+    HolonomicDriveController controller;
+    
+   double lastAngle = 0;
+   double angleOut = 0;
+   double lastOmega = 0;
+   double vFactor = 0;
+   boolean omegaOnPrev = false;
+   double speedTest = 0;
+
+   double lastWheelSpeed = 0;
+   double[] lastWheelSpeeds = new double[4];
+
     //SIMULATION
-    Pose2d newPose = new Pose2d(3, 3, Rotation2d.fromDegrees(0));
-    SwerveModulePosition[] swervePositions = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
-    SwerveDriveOdometry swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(0), swervePositions, newPose);
     Field2d field = new Field2d();
     //XboxController m_driverController = new XboxController(0);
 
@@ -74,22 +104,44 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backLeft = new SwerveModule(Swerve.BLA, Swerve.BLS);
         m_backRight = new SwerveModule(Swerve.BRA, Swerve.BRS);
 
-        m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
-        m_PIDAngle = new PIDController(Constants.Swerve.ANGLE_P, 0, 0);
-        //continuous input, wraps around min and max (this PID controller should only be recieving normalized values)
-        m_PIDAngle.enableContinuousInput(0.0, 360.0);
+        // m_PIDSpeed = new PIDController(Constants.Swerve.SPEED_P, 0, 0);
+        m_PIDAngle = new PIDController(0.1, 0, 0);
+        // //continuous input, wraps around min and max
+        m_PIDAngle.enableContinuousInput(-180, 180);
 
-        //I think we're only using feedforward for the wheel speed, not module angle
+        //Feedforward is only used for the wheel speed, not the module angle
         m_feedForward = new SimpleMotorFeedforward(Constants.Swerve.Ks, Constants.Swerve.Kv);
 
-        zeroYaw();
+        
+
+        //AUTON
+        frontRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontRight.getAdjustedAbsolutePosition()));
+        frontLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_frontLeft.getAdjustedAbsolutePosition()));
+        backRightPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backRight.getAdjustedAbsolutePosition()));
+        backLeftPosition = new SwerveModulePosition(0, Rotation2d.fromDegrees(m_backLeft.getAdjustedAbsolutePosition()));
+
+        swervePositions[0] = frontRightPosition;
+        swervePositions[1] = frontLeftPosition;
+        swervePositions[2] = backRightPosition;
+        swervePositions[3] = backLeftPosition;
+
+        autonPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getYaw()));
+        // swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
+
+        controller = new HolonomicDriveController
+        (new PIDController(0.1, 0, 0), new PIDController(0.1, 0, 0), 
+        new ProfiledPIDController(0.1, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
+
+        swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
         //SIMULATION
         SmartDashboard.putData("Field", field);
         field.getRobotObject().close();
+
+        zeroYaw();
     }
 
-    public void Swerve(double vx, double vy, double omega) {
+    public void swerve(double vx, double vy, double omega) {
 
         //vx: input joystick Y value (left joystick)
         //vy: input joystick X value (left joystick)
@@ -114,7 +166,66 @@ public class SwerveSubsystem extends SubsystemBase {
         // System.out.println("vx " + vx);
         // System.out.println("vy " + vy);
 
-        ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
+        // final double CURRENT_YAW = getYaw();
+        // omega += m_PIDAngle.calculate( CURRENT_YAW, CURRENT_YAW + omega);
+       
+        // System.out.println("omega " + omega);
+        
+        if (angleAlignOn)
+        {
+            if (omega == 0)
+            {
+                vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
+
+                //double vFactor2 = 16 * (lastWheelSpeed) - 4;
+
+                if (lastOmega > 0)
+                {
+                angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+                }
+                else
+                {
+                    angleOut = m_PIDAngle.calculate(getYaw(), lastAngle - vFactor);
+                }
+
+                //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+                omega += angleOut;
+                //System.out.println("navx angle " + getYaw());
+                if (cycle % 10 == 0)
+                {
+                    // System.out.println("last omega " + lastOmega + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
+                    // System.out.println("error " + (lastAngle - getYaw()));
+
+                    // System.out.println("last wheel speed " + lastWheelSpeed + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
+                    // System.out.println("error " + (lastAngle - getYaw()));
+                }
+            }
+            else
+            {
+                lastAngle = getYaw();
+                lastOmega = omega;
+
+                lastWheelSpeeds[0] = m_frontRight.getVelocityMPS();
+                lastWheelSpeeds[1] = m_frontLeft.getVelocityMPS();
+                lastWheelSpeeds[2] = m_backLeft.getVelocityMPS();
+                lastWheelSpeeds[3] = m_backRight.getVelocityMPS();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (lastWheelSpeeds[i] < 0) lastWheelSpeeds[i] *= -1;
+
+                    lastWheelSpeed += lastWheelSpeeds[i];
+                }
+
+                lastWheelSpeed /= 4;
+
+                //lastWheelSpeed = m_backLeft.getVelocityMPS();
+                //System.out.println("last angle " + lastAngle);
+
+            }
+        }
+
+        //ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
 
         ChassisSpeeds moduleSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, Rotation2d.fromDegrees(getYaw()));
 
@@ -244,8 +355,28 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
+    public ChassisSpeeds trackTrajectory(double timeStamp, Trajectory t)
+    {
+        Trajectory.State referenceState = t.sample(timeStamp);
+        return controller.calculate(autonPose, referenceState, Rotation2d.fromDegrees(0));
+    }
+
     public double getYaw() {
-        return m_navX.getYaw() * -1; // * -1? I think the 2023 code has this for some reason
+        return m_navX.getYaw() * -1; // INCLUDE THE NEGATIVE ONE it is needed to make sure that the negatives go the right way
+        //navX default system is opposite what all of wpilib uses, where negative is on the right from the center I think
+    }
+
+    public double getAdjustedYaw()
+    {
+        double yaw = m_navX.getYaw();
+        if (yaw < 0)
+        {
+            return yaw * -1;
+        }
+        else
+        {
+            return 360 - yaw;
+        }
     }
 
     public double getPitch() {
@@ -260,6 +391,30 @@ public class SwerveSubsystem extends SubsystemBase {
     {
         m_navX.zeroYaw();
         System.out.println("NavX yaw has been zeroed---------------");
+        swerveOdometry.resetPosition(Rotation2d.fromDegrees(0), swervePositions, new Pose2d());
+        lastAngle = 0;
+        lastOmega = 0;
+    }
+
+    public void toggleAngleAlign()
+    {
+        if(!angleAlignOn)
+        {
+            angleAlignOn = true;
+        }
+        else
+        {
+            angleAlignOn = false;
+        }
+
+        if (angleAlignOn)
+        {
+            System.out.println("angle alignment is on ----------------");
+        }
+        else
+        {
+            System.out.println("angle alignment is off-----------------");
+        }
     }
 
     // public void resetAllModuleAbsEncoders()
@@ -274,6 +429,18 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic()
     {
+        //AUTON
+        frontRightPosition = m_frontRight.getPosition();
+        frontLeftPosition = m_frontLeft.getPosition();
+        backRightPosition = m_backRight.getPosition();
+        backLeftPosition = m_backLeft.getPosition();
+
+        autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
+
+        //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
+        //System.out.println("swerveOdomety angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
+
+
         // newPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), 
         //     new SwerveModulePosition[] {
         //         new SwerveModulePosition(m_frontLeft.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_frontLeft.getDegrees())),
@@ -282,7 +449,7 @@ public class SwerveSubsystem extends SubsystemBase {
         //         new SwerveModulePosition(m_backRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backRight.getDegrees()))
         //     });
 
-        // field.getObject("Sim Robot").setPose(newPose);
+        field.getObject("real robot").setPose(autonPose);
 
         //comment this out when not simulating
         //Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
@@ -296,6 +463,17 @@ public class SwerveSubsystem extends SubsystemBase {
         cycle++;
         if (cycle % 8 == 0)
         {
+            //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getAdjustedYaw()));
+
+            //System.out.println("odometry angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
+            //System.out.println("navX angle " + getYaw());
+
+
+            speedTest += Math.abs(m_frontRight.getVelocityMPS()) + Math.abs(m_frontLeft.getVelocityMPS()) + Math.abs(m_backRight.getVelocityMPS()) + Math.abs(m_backLeft.getVelocityMPS());
+            speedTest /= 4;
+            System.out.println("average wheel speed " + speedTest);
+            //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
+
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
             // System.out.println("Front left module velocity: " + m_frontLeft.getVelocityMPS());
             // System.out.println("Back right module velocity: " + m_backRight.getVelocityMPS());
@@ -324,6 +502,9 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("back right encoder voltage " + m_backRight.getAbsEncoderVoltage());
             //System.out.println("Back left encoder position " + m_backLeft.getAbsolutePosition()); // 82.7
             //System.out.println("back left encoder voltage " + m_backLeft.getAbsEncoderVoltage());
+
+            //System.out.println("front right wheel distance " + m_frontRight.getWheelDistance());
+            //System.out.println("front left wheel distance " + m_frontLeft.getWheelDistance());
         }
     }
 

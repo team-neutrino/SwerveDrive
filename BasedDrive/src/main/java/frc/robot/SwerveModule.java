@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.util.Limiter;
@@ -66,6 +67,9 @@ public class SwerveModule {
         //(0, 360) now instead of (0, 3.3)
         absAngleEncoder.setPositionConversionFactor(360 / 3.3);
         speedEncoder.setVelocityConversionFactor(60);
+        //divide by the gear ratio to convert to wheel rotations, multiply by circumference to get meters
+        //this conversion seems to be correct
+        speedEncoder.setPositionConversionFactor(Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
 
         anglePIDController = angleMotor.getPIDController();
         anglePIDController.setFeedbackDevice(absAngleEncoder);
@@ -88,7 +92,7 @@ public class SwerveModule {
 
         //rpm to rps
         
-        speedEncoder.setVelocityConversionFactor(60 / (4096 * 6.55)); //needed?
+        speedEncoder.setVelocityConversionFactor(50 / (4096 * 6.55)); //* 4096 * 6.55)); //needed?
 
         //assuming we can get abs encoders to work
         //this should make it so we can use relative encoders after the correct position has been initialized
@@ -106,12 +110,22 @@ public class SwerveModule {
         return angleEncoder.getPosition(); 
     }
 
+    public double getWheelDistance()
+    {
+      return speedEncoder.getPosition();
+    }
+
+    public SwerveModulePosition getPosition()
+    {
+      return new SwerveModulePosition(getWheelDistance(), Rotation2d.fromDegrees(getAbsolutePosition()));
+    }
+
     public double getAbsolutePosition()
     {
       return adjustAngleOut(absAngleEncoder.getPosition());
     }
 
-    //is this method garbage now?
+    //used to convert back to wpilib system for angle optimization (don't delete)
     public double getAdjustedAbsolutePosition()
     {
       double pos = getAbsolutePosition();
@@ -175,7 +189,7 @@ public class SwerveModule {
     }
 
     /**
-     * Helper method that takes in the raw position from the absolute analog encoder that is present module and adjusts the retrieved angle as
+     * Helper method that takes in the raw position from the absolute analog encoder that is present in the module and adjusts the retrieved angle as
      * necessary to account for known offsets.
      * @param angle The initial position (0, 360) (increasing clockwise) from the absolute encoder that has not been adjusted for offsets
      * @return Accurate angle that reflects the real module angle after accounting for offsets
@@ -235,6 +249,11 @@ public class SwerveModule {
       return speedEncoder.getCountsPerRevolution();
     }
 
+    public int getMeasurementPeriod()
+    {
+      return speedEncoder.getMeasurementPeriod();
+    }
+
     public double getVelocityMPS()
     {
       //returns the wheel speeds in m/s instead of rotations/s
@@ -280,6 +299,11 @@ public class SwerveModule {
     public double getAbsEncoderVoltage()
     {
       return absAngleEncoder.getVoltage();
+    }
+
+    public double getAbsRawPosition()
+    {
+      return absAngleEncoder.getPosition();
     }
      
     // public void move(double speed, double angle) {
