@@ -163,13 +163,8 @@ public class SwerveSubsystem extends SubsystemBase {
         //and only using data when this is true. I can't recall ever using this in the past, but why not start now ig
         //(if we want to)
 
-        // System.out.println("vx " + vx);
-        // System.out.println("vy " + vy);
-
         // final double CURRENT_YAW = getYaw();
         // omega += m_PIDAngle.calculate( CURRENT_YAW, CURRENT_YAW + omega);
-       
-        // System.out.println("omega " + omega);
         
         if (angleAlignOn)
         {
@@ -177,7 +172,7 @@ public class SwerveSubsystem extends SubsystemBase {
             {
                 vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
 
-                //double vFactor2 = 16 * (lastWheelSpeed) - 4;
+                //double vFactor2 = 16 * (lastWheelSpeed) - 4; another curve, probably useless
 
                 if (lastOmega > 0)
                 {
@@ -187,17 +182,10 @@ public class SwerveSubsystem extends SubsystemBase {
                 {
                     angleOut = m_PIDAngle.calculate(getYaw(), lastAngle - vFactor);
                 }
-
-                //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
                 omega += angleOut;
-                //System.out.println("navx angle " + getYaw());
                 if (cycle % 10 == 0)
                 {
-                    // System.out.println("last omega " + lastOmega + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
-                    // System.out.println("error " + (lastAngle - getYaw()));
-
-                    // System.out.println("last wheel speed " + lastWheelSpeed + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
-                    // System.out.println("error " + (lastAngle - getYaw()));
+                    //put prints and other debug stuff here as needed
                 }
             }
             else
@@ -218,10 +206,6 @@ public class SwerveSubsystem extends SubsystemBase {
                 }
 
                 lastWheelSpeed /= 4;
-
-                //lastWheelSpeed = m_backLeft.getVelocityMPS();
-                //System.out.println("last angle " + lastAngle);
-
             }
         }
 
@@ -268,9 +252,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 }
             }
 
-        //I don't know if the line below will need to be used. After testing once it becomes clear how the chassis speeds transformation
-        //effects module speeds we can remove it or put in place a reasonable constant. Knowing the maximum wheel speed is necessary
-        //for accurate normalization however and thus hopefully useful PID (we'll see how far we can get...)
+        //if the wheel speeds need to have a global limit enforced here is the way and the place to do that
         //SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, 1);
         
         frontLeftState = moduleStates[1];
@@ -278,77 +260,25 @@ public class SwerveSubsystem extends SubsystemBase {
         backLeftState = moduleStates[3];
         backRightState = moduleStates[2];
 
-        //System.out.println("front right state angle " + frontRightState.angle.getDegrees());
-
-        //should the PID calculation use getAdjustedDegrees()? This would make it 1:1 with what's being retrieved from the module states...
-        //units are already the same but how many degrees is part of a real rotation is technically different for the motor and module at large
-        //... 
-
-        //ok im making the change ^^ if it doesn't work switch the methods back but I think this is correct
-
+        //feedforward calculation (for wheel speeds)
         
         double frontLeftFF = m_feedForward.calculate(frontLeftState.speedMetersPerSecond);
         double frontRightFF = m_feedForward.calculate(frontRightState.speedMetersPerSecond);
         double backLeftFF = m_feedForward.calculate(backLeftState.speedMetersPerSecond);
         double backRightFF = m_feedForward.calculate(backRightState.speedMetersPerSecond);
 
-        //PID on wheel speeds
-        // double frontLeftWheelOutput = frontLeftFF + m_PIDSpeed.calculate(
-        //     m_frontLeft.getVelocityMPS(), frontLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
-    
-        // double frontRightWheelOutput = frontRightFF + m_PIDSpeed.calculate(
-        //     m_frontRight.getVelocityMPS(), frontRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
-        
-        // double backLeftWheelOutput = backLeftFF + m_PIDSpeed.calculate(
-        //     m_backLeft.getVelocityMPS(), backLeftState.speedMetersPerSecond) * Constants.Swerve.Kv;
-        
-        // double backRightWheelOutput = backRightFF + m_PIDSpeed.calculate(
-        //     m_backRight.getVelocityMPS(), backRightState.speedMetersPerSecond) * Constants.Swerve.Kv;
-
-        //PID on module angle position
-        // double frontLeftAngleOutput = m_PIDAngle.calculate(
-        //     m_frontLeft.getAbsolutePosition() * 360, frontLeftState.angle.getDegrees());
-
-        // double frontRightAngleOutput = m_PIDAngle.calculate(
-        //     m_frontRight.getAbsolutePosition() * 360, frontRightState.angle.getDegrees());
-
-        // double backLeftAngleOutput = m_PIDAngle.calculate(
-        //     m_backLeft.getAbsolutePosition() * 360, backLeftState.angle.getDegrees());
-
-        // double backRightAngleOutput = m_PIDAngle.calculate(
-        //     m_backRight.getAbsolutePosition() * 360, backRightState.angle.getDegrees());
-
-        //set wheel speeds
-        // m_frontLeft.setWheelSpeedVolts(frontLeftWheelOutput);
-        // m_frontRight.setWheelSpeedVolts(frontRightWheelOutput);
-        // m_backLeft.setWheelSpeedVolts(backLeftWheelOutput);
-        // m_backRight.setWheelSpeedVolts(backRightWheelOutput);
-
-        //set module position speeds (in volts)
-        // m_frontLeft.setAngleSpeedVolts(frontLeftAngleOutput * 12.0);
-        // m_frontRight.setAngleSpeedVolts(frontRightAngleOutput * 12.0);
-        // m_backLeft.setAngleSpeedVolts(backLeftAngleOutput * 12.0);
-        // m_backRight.setAngleSpeedVolts(backRightAngleOutput * 12.0);
-
         if (cycle % 8 == 0)
         {
-            //System.out.println("back right reference " + backRightState.angle.getDegrees());  
-            // System.out.println("vx " + vx);
-            // System.out.println("vy " + vy);
-            //System.out.println("reference " + 90);
+            //prints and debug as necessary
         }
 
-        //System.out.println("back right reference " + backRightState.angle.getDegrees()); 
-        // System.out.println("vx " + vx);
-        // System.out.println("vy " + vy); 
-
-        //m_backRight.runAnglePID(90);
-
+        //angle pid
         m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
         m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
         m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
         m_backRight.runAnglePID(backRightState.angle.getDegrees());
 
+        //speed pid
         m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
         m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
         m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
@@ -471,7 +401,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             speedTest += Math.abs(m_frontRight.getVelocityMPS()) + Math.abs(m_frontLeft.getVelocityMPS()) + Math.abs(m_backRight.getVelocityMPS()) + Math.abs(m_backLeft.getVelocityMPS());
             speedTest /= 4;
-            System.out.println("average wheel speed " + speedTest);
+            //System.out.println("average wheel speed " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
