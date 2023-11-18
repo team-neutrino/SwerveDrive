@@ -205,7 +205,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 }
 
                 //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
-                //omega += angleOut;
+                omega += angleOut;
                 //System.out.println("navx angle " + getYaw());
                 if (cycle % 10 == 0)
                 {
