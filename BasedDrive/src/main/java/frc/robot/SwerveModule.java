@@ -33,7 +33,7 @@ public class SwerveModule {
         /*
          * This file follows the convention that the speed encoder and motor relate to the physical hardware that is 
          * responsible for the wheel on the ground spinning and the angle motor and encoder relate to the motor that controls
-         * the "azimuth" in Robot Casserole terms or otherwise what we call the "module angle," or the angle that the wheel is at
+         * the "azimuth" or otherwise what we call the "module angle," or the angle that the wheel is at
          * looking at it top down. While speed AND position data is technically accessible in both cases, in reality, our control
          * process only demands one or the other depending on what our output is. As a result, our getters reflect this and only certain 
          * data is accessible from the specifc encoder in question. This may change later but the way it is formatted as of now
@@ -59,17 +59,14 @@ public class SwerveModule {
         angleEncoder = angleMotor.getEncoder();
         speedEncoder = speedMotor.getEncoder();
 
-        //somewhere in here the position conversion factor has to be set with the abs encoder so that the pid is getting the same
-        //units for its reference and actual input
-
         absAngleEncoder = angleMotor.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute);
         absAngleEncoder.setInverted(true);
         //(0, 360) now instead of (0, 3.3)
         absAngleEncoder.setPositionConversionFactor(360 / 3.3);
         speedEncoder.setVelocityConversionFactor(60);
-        //divide by the gear ratio to convert to wheel rotations, multiply by circumference to get meters
-        //this conversion seems to be correct
-        speedEncoder.setPositionConversionFactor(Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
+        // //divide by the gear ratio to convert to wheel rotations, multiply by circumference to get meters
+        // //this conversion seems to be correct
+        // speedEncoder.setPositionConversionFactor(Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
 
         anglePIDController = angleMotor.getPIDController();
         anglePIDController.setFeedbackDevice(absAngleEncoder);
@@ -82,27 +79,8 @@ public class SwerveModule {
         speedPIDController.setFeedbackDevice(speedEncoder);
         speedPIDController.setP(Constants.Swerve.SPEED_P, 0);
 
-
-        //needed for finding position offset?
-        //angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
-
-
-        //it might not be a constant for every motor but for now it's set here
-        //absAngleEncoder.setZeroOffset(0);
-
-        //rpm to rps
-        
+        //rpm to rps. This constant has still not been determined and is a work in progress as of now
         speedEncoder.setVelocityConversionFactor(50 / (4096 * 6.55)); //* 4096 * 6.55)); //needed?
-
-        //assuming we can get abs encoders to work
-        //this should make it so we can use relative encoders after the correct position has been initialized
-        //oh and also make sure that the conversion between absolute encoder position and module angle is completely understood
-        //because when the relative positions are set the abs:relative position is not going to be 1:1 and thus going through some
-        //scaling will have to happen in order to get the relative encoders to work
-        //angleEncoder.setPosition(absAngleEncoder.getAbsolutePosition() - absAngleEncoder.getPositionOffset());
-
-        //The swerve module gear ratio is 6.55:1; dividing by this should return the module rotations in degrees
-        //angleEncoder.setPositionConversionFactor(360 / 6.55); needed???
     }
 
     public double getRotations()
