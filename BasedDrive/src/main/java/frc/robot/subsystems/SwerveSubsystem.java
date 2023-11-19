@@ -485,9 +485,9 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("navX angle " + getYaw());
 
 
-            speedTest += Math.abs(m_frontRight.getVelocityMPS()) + Math.abs(m_frontLeft.getVelocityMPS()) + Math.abs(m_backRight.getVelocityMPS()) + Math.abs(m_backLeft.getVelocityMPS());
+            speedTest += Math.abs(m_frontRight.getVelocityRPS()) + Math.abs(m_frontLeft.getVelocityRPS()) + Math.abs(m_backRight.getVelocityRPS()) + Math.abs(m_backLeft.getVelocityRPS());
             speedTest /= 4;
-            System.out.println("average wheel speed " + speedTest);
+            System.out.println("average wheel speed raw units " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());
