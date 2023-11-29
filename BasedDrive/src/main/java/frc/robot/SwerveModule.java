@@ -14,6 +14,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxAnalogSensor;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 
@@ -237,10 +238,8 @@ public class SwerveModule {
       return angle;
     }
 
-    public double getVelocityRPS()
+    public double getVelocityRaw()
     {
-      //default returns RPM, conversion is 60 so it should be returning
-      //rotations per second
       return speedEncoder.getVelocity();
     }
 
