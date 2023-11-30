@@ -446,12 +446,13 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic()
     {
         //AUTON
-        frontRightPosition = m_frontRight.getPosition();
-        frontLeftPosition = m_frontLeft.getPosition();
-        backRightPosition = m_backRight.getPosition();
-        backLeftPosition = m_backLeft.getPosition();
+        swervePositions[0] = m_frontRight.getPosition();
+        swervePositions[1] = m_frontLeft.getPosition();
+        swervePositions[2] = m_backRight.getPosition();
+        swervePositions[3] = m_backLeft.getPosition();
 
         autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
+        
 
         //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
         //System.out.println("swerveOdomety angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
@@ -487,7 +488,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
             speedTest += Math.abs(m_frontRight.getVelocityRaw()) + Math.abs(m_frontLeft.getVelocityRaw()) + Math.abs(m_backRight.getVelocityRaw()) + Math.abs(m_backLeft.getVelocityRaw());
             speedTest /= 4;
-            System.out.println("average wheel speed raw units " + speedTest);
+
+            System.out.println("autonPose x " + autonPose.getX() + " autonPose y " + autonPose.getY());
+
+            //System.out.println("average wheel speed raw units " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());

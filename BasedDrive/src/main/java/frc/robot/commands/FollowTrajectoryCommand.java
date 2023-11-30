@@ -41,8 +41,8 @@ public class FollowTrajectoryCommand extends CommandBase {
     // m_controller = p_controller;
     // m_t = p_t;
     // m_odometry = p_odometry;
-    ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(1, 0, 0), 
-    new PoseTriplet(1.5, 0, 0)));
+    ArrayList<PoseTriplet> straightArray = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0.5, 0, 0), 
+    new PoseTriplet(1, 0, 0)));
 
     ArrayList<PoseTriplet> infty = new ArrayList<PoseTriplet>(Arrays.asList(new PoseTriplet(0, 0, 0), new PoseTriplet(0.75, 0.5, 0), 
     new PoseTriplet(1.5, 0, 0), new PoseTriplet(2.25, -0.5, 0), new PoseTriplet(3, 0, 90), 
@@ -69,7 +69,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   public void execute() {
     System.out.println("command running");
     //referenceState = m_t.sample(timer.get());
-    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), inftyTraj);
+    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), straightTraj);
     m_swerve.swerve(referenceSpeeds.vxMetersPerSecond, referenceSpeeds.vyMetersPerSecond, referenceSpeeds.omegaRadiansPerSecond);
   }
 
@@ -84,7 +84,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (timer.get() >= inftyTraj.getTotalTimeSeconds())
+    if (timer.get() >= straightTraj.getTotalTimeSeconds())
         {
           return true;
         }
