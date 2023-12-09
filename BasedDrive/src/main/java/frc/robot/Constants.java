@@ -1,5 +1,4 @@
 package frc.robot;
-
 public class Constants {
     
     public static class Swerve {
@@ -63,5 +62,8 @@ public class Constants {
         public static double WHEEL_DIAMETER_M = 0.1032256;
         public static double WHEEL_CIRCUMFERENCE_M = Math.PI * WHEEL_DIAMETER_M;
         public static double WHEEL_RADIUS_M = 0.0516128;
+    }
+    public static class PathPlannerConstants {
+        new HolonomicPathFollowerConfig()
     }
 }
