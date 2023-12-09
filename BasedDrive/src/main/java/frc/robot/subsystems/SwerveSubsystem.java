@@ -67,6 +67,8 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModuleState backLeftStatePast;
     SwerveModuleState backRightStatePast;
 
+    boolean angleAlignOn = false;
+
     //AUTON
     SwerveModulePosition frontRightPosition;
     SwerveModulePosition frontLeftPosition;
@@ -182,57 +184,61 @@ public class SwerveSubsystem extends SubsystemBase {
         // omega += m_PIDAngle.calculate( CURRENT_YAW, CURRENT_YAW + omega);
        
         // System.out.println("omega " + omega);
-        if (omega == 0)
+        
+        if (angleAlignOn)
         {
-            //System.out.println("omega is zero ");
-
-            vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
-
-            //double vFactor2 = 16 * (lastWheelSpeed) - 4;
-
-            if (lastOmega > 0)
+            if (omega == 0)
             {
+                //System.out.println("omega is zero ");
+
+                vFactor = (13.6066 * (lastWheelSpeed) - 0.9628);
+
+                //double vFactor2 = 16 * (lastWheelSpeed) - 4;
+
+                if (lastOmega > 0)
+                {
                 angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+                }
+                else
+                {
+                    angleOut = m_PIDAngle.calculate(getYaw(), lastAngle - vFactor);
+                }
+
+                //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
+                omega += angleOut;
+                //System.out.println("navx angle " + getYaw());
+                if (cycle % 10 == 0)
+                {
+                    // System.out.println("last omega " + lastOmega + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
+                    // System.out.println("error " + (lastAngle - getYaw()));
+
+                    // System.out.println("last wheel speed " + lastWheelSpeed + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
+                    // System.out.println("error " + (lastAngle - getYaw()));
+                }
             }
             else
             {
-                angleOut = m_PIDAngle.calculate(getYaw(), lastAngle - vFactor);
+                lastAngle = getYaw();
+                lastOmega = omega;
+
+                lastWheelSpeeds[0] = m_frontRight.getVelocityMPS();
+                lastWheelSpeeds[1] = m_frontLeft.getVelocityMPS();
+                lastWheelSpeeds[2] = m_backLeft.getVelocityMPS();
+                lastWheelSpeeds[3] = m_backRight.getVelocityMPS();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (lastWheelSpeeds[i] < 0) lastWheelSpeeds[i] *= -1;
+
+                    lastWheelSpeed += lastWheelSpeeds[i];
+                }
+
+                lastWheelSpeed /= 4;
+
+                //lastWheelSpeed = m_backLeft.getVelocityMPS();
+                //System.out.println("last angle " + lastAngle);
+
             }
-
-            //angleOut = m_PIDAngle.calculate(getYaw(), lastAngle + vFactor);
-            //omega += angleOut;
-            //System.out.println("navx angle " + getYaw());
-            if (cycle % 10 == 0)
-            {
-                // System.out.println("last omega " + lastOmega + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
-                // System.out.println("error " + (lastAngle - getYaw()));
-
-                // System.out.println("last wheel speed " + lastWheelSpeed + "\nlast angle " + lastAngle + "\ncurrent angle " + getYaw());
-                // System.out.println("error " + (lastAngle - getYaw()));
-            }
-        }
-        else
-        {
-            lastAngle = getYaw();
-            lastOmega = omega;
-
-            lastWheelSpeeds[0] = m_frontRight.getVelocityMPS();
-            lastWheelSpeeds[1] = m_frontLeft.getVelocityMPS();
-            lastWheelSpeeds[2] = m_backLeft.getVelocityMPS();
-            lastWheelSpeeds[3] = m_backRight.getVelocityMPS();
-
-            for (int i = 0; i < 4; i++)
-            {
-                if (lastWheelSpeeds[i] < 0) lastWheelSpeeds[i] *= -1;
-
-                lastWheelSpeed += lastWheelSpeeds[i];
-            }
-
-            lastWheelSpeed /= 4;
-
-            //lastWheelSpeed = m_backLeft.getVelocityMPS();
-            //System.out.println("last angle " + lastAngle);
-
         }
 
         //ChassisSpeeds moduleSpeedsTwo = new ChassisSpeeds(vx, vy, omega);
@@ -406,6 +412,27 @@ public class SwerveSubsystem extends SubsystemBase {
         lastOmega = 0;
     }
 
+    public void toggleAngleAlign()
+    {
+        if(!angleAlignOn)
+        {
+            angleAlignOn = true;
+        }
+        else
+        {
+            angleAlignOn = false;
+        }
+
+        if (angleAlignOn)
+        {
+            System.out.println("angle alignment is on ----------------");
+        }
+        else
+        {
+            System.out.println("angle alignment is off-----------------");
+        }
+    }
+
     // public void resetAllModuleAbsEncoders()
     // {
     //     m_frontRight.resetAbsEncoder();
@@ -419,12 +446,13 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic()
     {
         //AUTON
-        frontRightPosition = m_frontRight.getPosition();
-        frontLeftPosition = m_frontLeft.getPosition();
-        backRightPosition = m_backRight.getPosition();
-        backLeftPosition = m_backLeft.getPosition();
+        swervePositions[0] = m_frontRight.getPosition();
+        swervePositions[1] = m_frontLeft.getPosition();
+        swervePositions[2] = m_backRight.getPosition();
+        swervePositions[3] = m_backLeft.getPosition();
 
         autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
+        
 
         //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
         //System.out.println("swerveOdomety angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
@@ -458,9 +486,12 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("navX angle " + getYaw());
 
 
-            speedTest += Math.abs(m_frontRight.getVelocityMPS()) + Math.abs(m_frontLeft.getVelocityMPS()) + Math.abs(m_backRight.getVelocityMPS()) + Math.abs(m_backLeft.getVelocityMPS());
+            speedTest += Math.abs(m_frontRight.getVelocityRaw()) + Math.abs(m_frontLeft.getVelocityRaw()) + Math.abs(m_backRight.getVelocityRaw()) + Math.abs(m_backLeft.getVelocityRaw());
             speedTest /= 4;
-            System.out.println("average wheel speed " + speedTest);
+
+            System.out.println("autonPose x " + autonPose.getX() + " autonPose y " + autonPose.getY());
+
+            //System.out.println("average wheel speed raw units " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
 
             // System.out.println("Front right module velocity: " + m_frontRight.getVelocityMPS());

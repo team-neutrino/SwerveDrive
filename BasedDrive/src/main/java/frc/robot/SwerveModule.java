@@ -14,6 +14,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxAnalogSensor;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 
@@ -69,7 +70,7 @@ public class SwerveModule {
         speedEncoder.setVelocityConversionFactor(60);
         //divide by the gear ratio to convert to wheel rotations, multiply by circumference to get meters
         //this conversion seems to be correct
-        speedEncoder.setPositionConversionFactor(Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
+        speedEncoder.setPositionConversionFactor(100 * Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M / 6.55);
 
         anglePIDController = angleMotor.getPIDController();
         anglePIDController.setFeedbackDevice(absAngleEncoder);
@@ -92,7 +93,7 @@ public class SwerveModule {
 
         //rpm to rps
         
-        speedEncoder.setVelocityConversionFactor(50 / (4096 * 6.55)); //* 4096 * 6.55)); //needed?
+        speedEncoder.setVelocityConversionFactor((0.3267 / (60 * 6.55))); //* 4096 * 6.55)); //needed?
 
         //assuming we can get abs encoders to work
         //this should make it so we can use relative encoders after the correct position has been initialized
@@ -237,16 +238,19 @@ public class SwerveModule {
       return angle;
     }
 
-    public double getVelocityRPS()
+    public double getVelocityRaw()
     {
-      //default returns RPM, conversion is 60 so it should be returning
-      //rotations per second
-      return speedEncoder.getVelocity();
+      return speedEncoder.getVelocity(); //* Constants.DimensionConstants.WHEEL_CIRCUMFERENCE_M;
     }
 
     public int countsPerRotation()
     {
       return speedEncoder.getCountsPerRevolution();
+    }
+
+    public int getMeasurementPeriod()
+    {
+      return speedEncoder.getMeasurementPeriod();
     }
 
     public double getVelocityMPS()
