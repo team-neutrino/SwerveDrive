@@ -69,7 +69,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   public void execute() {
     System.out.println("command running");
     //referenceState = m_t.sample(timer.get());
-    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), straightTraj);
+    referenceSpeeds = m_swerve.trackTrajectory(timer.get(), inftyTraj);
     m_swerve.swerve(referenceSpeeds.vxMetersPerSecond, referenceSpeeds.vyMetersPerSecond, referenceSpeeds.omegaRadiansPerSecond);
   }
 
@@ -84,7 +84,7 @@ public class FollowTrajectoryCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (timer.get() >= straightTraj.getTotalTimeSeconds())
+    if (timer.get() >= inftyTraj.getTotalTimeSeconds())
         {
           return true;
         }

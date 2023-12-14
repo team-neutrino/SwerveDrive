@@ -144,7 +144,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         controller = new HolonomicDriveController
         (new PIDController(0.1, 0, 0), new PIDController(0.1, 0, 0), 
-        new ProfiledPIDController(0.1, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
+        new ProfiledPIDController(1, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
 
         swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
@@ -374,7 +374,13 @@ public class SwerveSubsystem extends SubsystemBase {
     public ChassisSpeeds trackTrajectory(double timeStamp, Trajectory t)
     {
         Trajectory.State referenceState = t.sample(timeStamp);
-        return controller.calculate(autonPose, referenceState, Rotation2d.fromDegrees(0));
+        double degree = 0;
+        if (timeStamp > 2)
+        {
+            degree = 90;
+        }
+
+        return controller.calculate(autonPose, referenceState, Rotation2d.fromDegrees(degree));
     }
 
     public double getYaw() {
@@ -452,6 +458,8 @@ public class SwerveSubsystem extends SubsystemBase {
         swervePositions[3] = m_backLeft.getPosition();
 
         autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
+
+        autonPose = new Pose2d(new Translation2d(autonPose.getX(), autonPose.getY()), Rotation2d.fromDegrees(90));
         
 
         //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
