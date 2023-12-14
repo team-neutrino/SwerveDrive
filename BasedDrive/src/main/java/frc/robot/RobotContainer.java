@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -52,7 +55,10 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return m_followTrajectoryCommand;
+
+    PathPlannerPath path = PathPlannerPath.fromPathFile("Origin");
+
+    return AutoBuilder.followPathWithEvents(path);
     //return Commands.print("No autonomous command configured");
   }
 }

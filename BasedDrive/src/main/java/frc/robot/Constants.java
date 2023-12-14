@@ -1,4 +1,9 @@
 package frc.robot;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
+import edu.wpi.first.math.geometry.Translation2d;
 public class Constants {
     
     public static class Swerve {
@@ -15,6 +20,8 @@ public class Constants {
 
        public static double frontRightX = 0.2155261469;
        public static double frontRightY = -0.2155261469;
+
+       public static final Translation2d flModuleOffset = new Translation2d(0.2155261469, 0.2155261469);
 
        public static double frontLeftX = 0.2155261469;
        public static double frontLeftY = 0.2155261469;
@@ -64,6 +71,6 @@ public class Constants {
         public static double WHEEL_RADIUS_M = 0.0516128;
     }
     public static class PathPlannerConstants {
-        new HolonomicPathFollowerConfig()
+        public static final HolonomicPathFollowerConfig pathFollowerConfig = new HolonomicPathFollowerConfig(new PIDConstants(0.1, 0, 0), new PIDConstants(0.1, 0, 0), Swerve.MAX_CHASSIS_LINEAR_SPEED, Swerve.flModuleOffset.getNorm(), new ReplanningConfig());
     }
 }
