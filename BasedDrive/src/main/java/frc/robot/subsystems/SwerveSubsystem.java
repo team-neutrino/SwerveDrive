@@ -92,6 +92,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     //SIMULATION
     Field2d field = new Field2d();
+    Pose2d autonSimPose = new Pose2d();
+    Pose2d generalSimPose = new Pose2d();
     //XboxController m_driverController = new XboxController(0);
 
     //DELETE LATER
@@ -146,6 +148,8 @@ public class SwerveSubsystem extends SubsystemBase {
         (new PIDController(0.1, 0, 0), new PIDController(0.1, 0, 0), 
         new ProfiledPIDController(1, 0, 0, new TrapezoidProfile.Constraints(6.28, 3.14)));
 
+        controller.setEnabled(false);
+
         swerveOdometry = new SwerveDriveOdometry(m_kinematics, Rotation2d.fromDegrees(getYaw()), swervePositions, autonPose);
 
         //SIMULATION
@@ -170,6 +174,12 @@ public class SwerveSubsystem extends SubsystemBase {
         //depending on which alliance we/the opponents are (DriverStation.getAlliance())
         //reference the fromfieldRelativeSpeeds method docs as necessary for more exact defintion of parameters and output
 
+        double deltaX = vx * 0.02;
+        double deltaY = vy * 0.02;
+        double deltaO = omega * 0.02;
+
+        generalSimPose = new Pose2d(new Translation2d(generalSimPose.getX() + deltaX, generalSimPose.getY() + deltaY), Rotation2d.fromDegrees(generalSimPose.getRotation().getDegrees() + deltaO * (180 / Math.PI)));
+ 
         //something to consider, module angle rate of change should be limited to prevent skidding when translated quickly
         //RobotCasserole uses interpolation with a look up table, might be useful
 
@@ -371,16 +381,68 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
+    public void autonSwerve(ChassisSpeeds referenceSpeeds)
+    {
+        //referenceSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(referenceSpeeds, generalSimPose.getRotation());
+        if (cycle % 8 == 0)
+        {
+            // System.out.println("angle of gsim object " + generalSimPose.getRotation().getDegrees());
+            // System.out.println("x velocity " + referenceSpeeds.vxMetersPerSecond);
+        }
+
+        double vx = referenceSpeeds.vxMetersPerSecond * Math.cos(generalSimPose.getRotation().getRadians()) - referenceSpeeds.vyMetersPerSecond * Math.sin(generalSimPose.getRotation().getRadians());
+        double vy = referenceSpeeds.vyMetersPerSecond * Math.cos(generalSimPose.getRotation().getRadians()) + referenceSpeeds.vxMetersPerSecond * Math.sin(generalSimPose.getRotation().getRadians());
+        double omega = referenceSpeeds.omegaRadiansPerSecond;
+
+        double deltaX = vx * 0.02;
+        double deltaY = vy * 0.02;
+        double deltaO = omega * 0.02;
+
+        generalSimPose = new Pose2d(new Translation2d(generalSimPose.getX() + deltaX, generalSimPose.getY() + deltaY), Rotation2d.fromDegrees(generalSimPose.getRotation().getDegrees() + deltaO * (180 / Math.PI)));
+
+        moduleStates = m_kinematics.toSwerveModuleStates(referenceSpeeds);
+
+        frontRightState = moduleStates[0];
+        frontLeftState = moduleStates[1];
+        backRightState = moduleStates[2];
+        backLeftState = moduleStates[3];
+
+        double frontLeftFF = m_feedForward.calculate(frontLeftState.speedMetersPerSecond);
+        double frontRightFF = m_feedForward.calculate(frontRightState.speedMetersPerSecond);
+        double backLeftFF = m_feedForward.calculate(backLeftState.speedMetersPerSecond);
+        double backRightFF = m_feedForward.calculate(backRightState.speedMetersPerSecond);
+
+        m_frontLeft.runAnglePID(frontLeftState.angle.getDegrees());
+        m_frontRight.runAnglePID(frontRightState.angle.getDegrees());
+        m_backLeft.runAnglePID(backLeftState.angle.getDegrees());
+        m_backRight.runAnglePID(backRightState.angle.getDegrees());
+
+        m_frontLeft.runSpeedPID(frontLeftState.speedMetersPerSecond, frontLeftFF);
+        m_frontRight.runSpeedPID(frontRightState.speedMetersPerSecond, frontRightFF);
+        m_backLeft.runSpeedPID(backLeftState.speedMetersPerSecond, backLeftFF);
+        m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
+    }
+
     public ChassisSpeeds trackTrajectory(double timeStamp, Trajectory t)
     {
         Trajectory.State referenceState = t.sample(timeStamp);
         double degree = 0;
+
+        autonSimPose = referenceState.poseMeters;
+
         if (timeStamp > 2)
         {
             degree = 90;
         }
 
-        return controller.calculate(autonPose, referenceState, Rotation2d.fromDegrees(degree));
+        double xFF = referenceState.velocityMetersPerSecond * referenceState.poseMeters.getRotation().getCos();
+        double yFF = referenceState.velocityMetersPerSecond * referenceState.poseMeters.getRotation().getSin();
+
+        ChassisSpeeds broken = controller.calculate(generalSimPose, referenceState, Rotation2d.fromDegrees(degree));
+
+        ChassisSpeeds out = new ChassisSpeeds(xFF, yFF, broken.omegaRadiansPerSecond);
+
+        return broken;
     }
 
     public double getYaw() {
@@ -416,6 +478,7 @@ public class SwerveSubsystem extends SubsystemBase {
         swerveOdometry.resetPosition(Rotation2d.fromDegrees(0), swervePositions, new Pose2d());
         lastAngle = 0;
         lastOmega = 0;
+        //generalSimPose = new Pose2d();
     }
 
     public void toggleAngleAlign()
@@ -459,7 +522,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         autonPose = swerveOdometry.update(Rotation2d.fromDegrees(getYaw()), swervePositions);
 
-        autonPose = new Pose2d(new Translation2d(autonPose.getX(), autonPose.getY()), Rotation2d.fromDegrees(90));
+        autonPose = new Pose2d(new Translation2d(autonPose.getX(), autonPose.getY()), Rotation2d.fromDegrees(0));
         
 
         //System.out.println("angle error between odometry and navx " + (swerveOdometry.getPoseMeters().getRotation().getDegrees() - getYaw()));
@@ -474,7 +537,9 @@ public class SwerveSubsystem extends SubsystemBase {
         //         new SwerveModulePosition(m_backRight.getRotations() * DimensionConstants.WHEEL_DIAMETER_M, Rotation2d.fromDegrees(m_backRight.getDegrees()))
         //     });
 
-        field.getObject("real robot").setPose(autonPose);
+        field.getObject("auton").setPose(autonSimPose);
+        field.getObject("teleop").setPose(generalSimPose);
+        
 
         //comment this out when not simulating
         //Swerve(m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
@@ -493,11 +558,12 @@ public class SwerveSubsystem extends SubsystemBase {
             //System.out.println("odometry angle " + swerveOdometry.getPoseMeters().getRotation().getDegrees());
             //System.out.println("navX angle " + getYaw());
 
+            //System.out.println("angle of gsim object " + generalSimPose.getRotation().getDegrees());
 
             speedTest += Math.abs(m_frontRight.getVelocityRaw()) + Math.abs(m_frontLeft.getVelocityRaw()) + Math.abs(m_backRight.getVelocityRaw()) + Math.abs(m_backLeft.getVelocityRaw());
             speedTest /= 4;
 
-            System.out.println("autonPose x " + autonPose.getX() + " autonPose y " + autonPose.getY());
+            //System.out.println("autonPose x " + autonPose.getX() + " autonPose y " + autonPose.getY());
 
             //System.out.println("average wheel speed raw units " + speedTest);
             //System.out.println("counts per rotation " + m_backRight.countsPerRotation());
