@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -46,7 +50,8 @@ public class RobotContainer {
     //I know this is terrible practice but I was a tad curious as to lambda and anonymous class syntax... I'll replace it with something
     //formal if it doesn't work or once a better solution to this problem is found
     m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
-    m_buttonA.onTrue(m_followTrajectoryCommand);
+    PathPlannerPath path = PathPlannerPath.fromPathFile("Demo Path");
+    m_buttonA.onTrue(AutoBuilder.followPathWithEvents(path));
     m_buttonY.onTrue(new InstantCommand(() -> m_swerve.toggleAngleAlign()));
     //m_buttonA.onTrue(new InstantCommand(() -> m_swerve.resetAllModuleAbsEncoders()));
   }

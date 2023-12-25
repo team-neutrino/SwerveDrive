@@ -30,6 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -79,6 +83,7 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveModulePosition[] swervePositions = new SwerveModulePosition[4];
     SwerveDriveOdometry swerveOdometry;
     HolonomicDriveController controller;
+    ChassisSpeeds referenceSpeeds = new ChassisSpeeds();
     
    double lastAngle = 0;
    double angleOut = 0;
@@ -157,6 +162,10 @@ public class SwerveSubsystem extends SubsystemBase {
         field.getRobotObject().close();
 
         zeroYaw();
+
+        AutoBuilder.configureHolonomic(this::getPose, this::resetPose, this::getRobotRelativeSpeeds, this::autonSwerve, 
+        new HolonomicPathFollowerConfig(new PIDConstants(0.1, 0, 0), new PIDConstants(1, 0, 0), 2, 0.3048238, new ReplanningConfig()),
+        this);
     }
 
     public void swerve(double vx, double vy, double omega) {
@@ -381,6 +390,13 @@ public class SwerveSubsystem extends SubsystemBase {
         m_backRight.runSpeedPID(backRightState.speedMetersPerSecond, backRightFF);
     }
 
+    /**
+     * Swerve method that is specifically designed to move the robot given robot relative reference speeds. DO NOT attempt to give this method field relative speeds
+     * because you will simply move in that way relative to the robot. The basic swerve() takes in field relative. This method is primarily useful for auton and should
+     * generally not be used anywhere else.
+     * 
+     * @param referenceSpeeds
+     */
     public void autonSwerve(ChassisSpeeds referenceSpeeds)
     {
         //referenceSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(referenceSpeeds, generalSimPose.getRotation());
@@ -438,6 +454,7 @@ public class SwerveSubsystem extends SubsystemBase {
         double xFF = referenceState.velocityMetersPerSecond * referenceState.poseMeters.getRotation().getCos();
         double yFF = referenceState.velocityMetersPerSecond * referenceState.poseMeters.getRotation().getSin();
 
+        //switch the current position to the actual one (autonPose) when not simulating
         ChassisSpeeds broken = controller.calculate(generalSimPose, referenceState, Rotation2d.fromDegrees(degree));
 
         ChassisSpeeds out = new ChassisSpeeds(xFF, yFF, broken.omegaRadiansPerSecond);
@@ -501,6 +518,23 @@ public class SwerveSubsystem extends SubsystemBase {
             System.out.println("angle alignment is off-----------------");
         }
     }
+
+    public Pose2d getPose()
+    {
+        return generalSimPose;
+    }
+
+    public void resetPose(Pose2d pose)
+    {
+        pose = new Pose2d();
+    }
+
+    public ChassisSpeeds getRobotRelativeSpeeds()
+    {
+        return referenceSpeeds;
+    }
+
+
 
     // public void resetAllModuleAbsEncoders()
     // {
