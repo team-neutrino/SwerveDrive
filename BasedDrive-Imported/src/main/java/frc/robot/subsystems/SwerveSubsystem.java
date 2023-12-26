@@ -373,6 +373,7 @@ public class SwerveSubsystem extends SubsystemBase {
             // System.out.println("x velocity " + referenceSpeeds.vxMetersPerSecond);
         }
 
+        //rotating back to the "original" coordinate system that is field-oriented
         double vx = referenceSpeeds.vxMetersPerSecond * Math.cos(generalSimPose.getRotation().getRadians()) - referenceSpeeds.vyMetersPerSecond * Math.sin(generalSimPose.getRotation().getRadians());
         double vy = referenceSpeeds.vyMetersPerSecond * Math.cos(generalSimPose.getRotation().getRadians()) + referenceSpeeds.vxMetersPerSecond * Math.sin(generalSimPose.getRotation().getRadians());
         double omega = referenceSpeeds.omegaRadiansPerSecond;
