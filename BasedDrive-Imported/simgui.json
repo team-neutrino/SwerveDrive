@@ -6,6 +6,13 @@
     },
     "windows": {
       "/SmartDashboard/Field": {
+        "bottom": 544,
+        "builtin": "2023 Charged Up",
+        "height": 8.013679504394531,
+        "left": 46,
+        "right": 1088,
+        "top": 36,
+        "width": 16.541748046875,
         "window": {
           "visible": true
         }

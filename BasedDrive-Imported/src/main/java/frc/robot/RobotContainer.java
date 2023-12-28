@@ -6,8 +6,12 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -46,12 +50,17 @@ public class RobotContainer {
     //make default command
     m_swerve.setDefaultCommand(m_swerveDefaultCommand);
 
+    Pose2d targetPose = new Pose2d(13, 6.5, Rotation2d.fromDegrees(90));
+
+    PathConstraints constraints = new PathConstraints(5, 2, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
     //Is this right??
     //I know this is terrible practice but I was a tad curious as to lambda and anonymous class syntax... I'll replace it with something
     //formal if it doesn't work or once a better solution to this problem is found
     //m_buttonX.onTrue(new InstantCommand(() -> m_swerve.zeroYaw()));
     PathPlannerPath path = PathPlannerPath.fromPathFile("Demo Path");
     m_buttonA.onTrue(AutoBuilder.followPathWithEvents(path));
+    m_buttonX.onTrue(AutoBuilder.pathfindToPose(targetPose, constraints, 0, 0));
     //m_buttonY.onTrue(new InstantCommand(() -> m_swerve.toggleAngleAlign()));
     //m_buttonA.onTrue(new InstantCommand(() -> m_swerve.resetAllModuleAbsEncoders()));
   }
